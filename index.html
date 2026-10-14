@@ -47,6 +47,9 @@ legend .n{font:500 .75rem var(--mono);color:var(--accent);border:1px solid var(-
 .grid .full{grid-column:1/-1}
 @media (max-width:480px){.grid:not(.keep2){grid-template-columns:minmax(0,1fr)}.keep2{gap:10px 8px}}
 label{display:flex;flex-direction:column;gap:4px;font-size:.78rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);min-width:0}
+input[type=date]{-webkit-appearance:none;appearance:none;display:block;text-align:left;line-height:1.2;min-height:42px}
+input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0}
+input[type=date]::-webkit-calendar-picker-indicator{margin:0}
 input,select,textarea{font:400 1rem var(--body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 11px;width:100%;min-width:0;text-transform:none;letter-spacing:0}
 input[type=number],.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 textarea{min-height:96px;resize:vertical}
@@ -170,7 +173,7 @@ tr:last-child td{border-bottom:0}
 
 <div class="wrap" id="wrap">
   <header class="top">
-    <h1>Werfdagboek Sibelga<small>Dagrapport uitgevoerde werken · offline · <span id="today"></span></small></h1>
+    <h1>Werfdagboek Sibelga<small>Dagrapport uitgevoerde werken · <span id="today"></span></small></h1>
     <div class="who" id="who"></div>
   </header>
 
@@ -188,6 +191,7 @@ tr:last-child td{border-bottom:0}
       <div class="share-btns">
         <a class="btn wa" id="wa-link" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.2c0-.1-.2-.2-.4-.3Z"/></svg>Verstuur via WhatsApp</a>
         <button class="btn small" type="button" id="wa-share" hidden>Delen met foto's</button>
+        <button class="btn small" type="button" id="csv-share">CSV delen</button>
         <button class="btn small" type="button" id="wa-copy">Kopieer tekst</button>
         <button class="btn small" type="button" id="share-close">Sluiten</button>
       </div>
@@ -738,11 +742,12 @@ function renderDetail(){
     ${(r.transport||[]).length?`<h4>Transport</h4>`+tbl(`<th>Firma</th><th>Soort</th><th class="n">Ritten</th>`, r.transport.map(p=>`<tr><td>${esc(p.firma)}</td><td>${esc(p.soort)}</td><td class="n">${p.ritten??"—"}</td></tr>`)):""}
     ${r.opmerkingen?`<h4>Opmerkingen</h4><p>${esc(r.opmerkingen)}</p>`:""}
     ${(r.fotos||[]).length?`<h4>Foto's</h4><div class="photos">${r.fotos.map((id,i)=>`<a class="ph" href="${esc(window.__blobUrl(id))}" target="_blank" rel="noopener"><img src="${esc(window.__blobUrl(id))}" alt="Werffoto ${i+1}" loading="lazy"></a>`).join("")}</div>`:""}
-    <div class="share-btns" style="margin-top:14px"><a class="btn small wa" href="${esc(waLink(r))}" target="_blank" rel="noopener">Verstuur via WhatsApp</a>${canShareFiles(r)?'<button class="btn small" type="button" id="d-share">Delen met foto\'s</button>':""}</div><p class="msg" id="d-share-msg" hidden></p>
+    <div class="share-btns" style="margin-top:14px"><a class="btn small wa" href="${esc(waLink(r))}" target="_blank" rel="noopener">Verstuur via WhatsApp</a>${canShareFiles(r)?'<button class="btn small" type="button" id="d-share">Delen met foto\'s</button>':""}<button class="btn small" type="button" id="d-csv">CSV delen</button></div><p class="msg" id="d-share-msg" hidden></p>
     ${canChange?`<div class="confirm" style="margin-top:10px" id="d-act"><button class="btn small" type="button" id="d-edit">Bewerken</button><button class="btn small danger" type="button" id="d-del">Verwijderen</button></div>`:""}
   </div>`;
   $("#d-close").onclick=()=>{ openId=null; renderDetail(); };
   if($("#d-share")) $("#d-share").onclick=()=>shareWithPhotos(r,$("#d-share-msg"));
+  $("#d-csv").onclick=()=>shareCsv(r,$("#d-share-msg"));
   if(canChange){
     $("#d-edit").onclick=()=>{ editingId=r.id; fillForm(r); $("#edit-banner").hidden=false; show("new"); window.scrollTo({top:0}); };
     $("#d-del").onclick=()=>{
@@ -753,45 +758,73 @@ function renderDetail(){
   }
 }
 // ---------- WhatsApp
-function waDetail(p){
+function waLine(p){
   const k=kindOf(p.activiteit), f=v=>v!=null&&v!==""?fmt(v):null, b=[];
+  const q=p.hoeveelheid!=null?fmt(p.hoeveelheid)+" "+p.eenheid:"";
+  b.push(`${p.activiteit||"Post"}${q?" *"+q+"*":""}`);
   if(k==="graaf"){
     if(p.type) b.push(p.type);
-    if(f(p.breedteSleuf)||f(p.diepte)) b.push(`sleuf ${f(p.breedteSleuf)??"?"} × ${f(p.diepte)??"?"} m`);
-    if(f(p.breedteBestr)) b.push(`bestr. ${f(p.breedteBestr)} m breed`);
-    if(f(p.dikteFund)) b.push(`fund. ${f(p.dikteFund)} cm`);
-    if(f(p.dikteZand)) b.push(`zandverv. ${f(p.dikteZand)} cm`);
-    const calc=[p.m2!=null?fmt(p.m2)+" m² bestrating":"", p.m3!=null?fmt(p.m3)+" m³ uitgraving":""].filter(Boolean).join(" · ");
-    const out=[]; if(b.length) out.push(b.join(", ")); if(calc) out.push("→ "+calc);
-    const lt=leidText(p.leidingen); if(lt) out.push("Leidingen: "+lt);
-    return out;
-  }
-  if(k==="bestr"){ const x=[p.type, (f(p.lengte)||f(p.breedteBestr))?`${f(p.lengte)??"?"} × ${f(p.breedteBestr)??"?"} m`:""].filter(Boolean).join(", "); return x?[x]:[]; }
-  if(k==="kabel") return p.type?[p.type]:[];
-  if(k==="bak") return [[p.opdrachtgever,p.type].filter(Boolean).join(" – ")].filter(Boolean);
-  if(k==="opkuis") return p.omschrijving?[p.omschrijving]:[];
-  return p.post?[p.post]:[];
+    if(f(p.breedteSleuf)||f(p.diepte)) b.push(`sleuf ${f(p.breedteSleuf)??"?"}×${f(p.diepte)??"?"}`);
+    if(f(p.breedteBestr)) b.push(`bestr ${f(p.breedteBestr)}`);
+    if(f(p.dikteFund)) b.push(`fund ${f(p.dikteFund)}cm`);
+    if(f(p.dikteZand)) b.push(`zand ${f(p.dikteZand)}cm`);
+    const c=[p.m2!=null?fmt(p.m2)+" m²":"", p.m3!=null?fmt(p.m3)+" m³":""].filter(Boolean).join(" / "); if(c) b.push(c);
+    const lt=Array.isArray(p.leidingen)?p.leidingen.map(x=>`${fmt(x.hoeveelheid??0)}×${x.type}`).join(", "):""; if(lt) b.push(lt);
+  } else if(k==="bestr"){ if(p.type) b.push(p.type); if(f(p.lengte)||f(p.breedteBestr)) b.push(`${f(p.lengte)??"?"}×${f(p.breedteBestr)??"?"}`); }
+  else if(k==="kabel"){ if(p.type) b.push(p.type); }
+  else if(k==="bak"){ [p.opdrachtgever,p.type].filter(Boolean).forEach(x=>b.push(x)); }
+  else if(k==="opkuis"){ if(p.omschrijving) b.push(p.omschrijving); }
+  else if(p.post) b.push(p.post);
+  return "- "+b.join(" | ");
 }
 function waText(r){
   const d=asDate(r.datum), L=[];
-  L.push(`*Dagrapport BC ${r.referentie||"?"}*`);
-  L.push(`${d.toLocaleDateString("nl-BE",{weekday:"long",day:"numeric",month:"long"})} · week ${isoWeek(d)} · ${nm(r.auteur)}`);
-  if(r.actie) L.push("","⚠ *ACTIE NODIG VAN PROJECTLEIDING*");
+  L.push(`*BC ${r.referentie||"?"} · ${d.toLocaleDateString("nl-BE",{weekday:"short",day:"2-digit",month:"2-digit"})} (wk ${isoWeek(d)})* – ${nm(r.auteur)}`);
+  if(r.actie) L.push("⚠ *ACTIE NODIG*");
   const groups=new Map();
-  (r.posten||[]).forEach(p=>{ const k=uitvLabel(p)||"Uitvoerder niet ingevuld"; if(!groups.has(k)) groups.set(k,{oa:p.uitvoerderType==="oa",posten:[]}); groups.get(k).posten.push(p); });
-  [...groups.entries()].sort((a,b)=>(a[1].oa-b[1].oa)||a[0].localeCompare(b[0],"nl")).forEach(([lab,g])=>{
-    L.push("",`👷 *${lab}*`);
-    g.posten.forEach(p=>{
-      const q=p.hoeveelheid!=null?fmt(p.hoeveelheid)+" "+p.eenheid:"";
-      L.push(`• ${p.activiteit||"Post"}${q?": *"+q+"*":""}`);
-      waDetail(p).forEach(x=>L.push(`   ${x}`));
-    });
-  });
-  if((r.materiaal||[]).length){ L.push("","📦 *Aan te leveren*"); r.materiaal.forEach(p=>L.push(`• ${matName(p)}${p.hoeveelheid!=null?": "+fmt(p.hoeveelheid)+" "+p.eenheid:""}`)); }
-  if((r.afvoer||[]).length){ L.push("","🚛 *Af te voeren*"); r.afvoer.forEach(p=>L.push(`• ${p.soort||"?"}${p.hoeveelheid!=null?": "+fmt(p.hoeveelheid)+" "+p.eenheid:""}`)); }
-  if(r.opmerkingen) L.push("","📝 *Opmerkingen*", r.opmerkingen);
-  if((r.fotos||[]).length) L.push("", `📷 ${r.fotos.length} foto${r.fotos.length>1?"'s":""}`);
+  (r.posten||[]).forEach(p=>{ const k=uitvLabel(p)||"Uitvoerder ?"; if(!groups.has(k)) groups.set(k,{oa:p.uitvoerderType==="oa",posten:[]}); groups.get(k).posten.push(p); });
+  [...groups.entries()].sort((a,b)=>(a[1].oa-b[1].oa)||a[0].localeCompare(b[0],"nl")).forEach(([lab,g])=>{ L.push("",`*${lab}*`); g.posten.forEach(p=>L.push(waLine(p))); });
+  const lev=(r.materiaal||[]).map(p=>`${matName(p)} ${p.hoeveelheid!=null?fmt(p.hoeveelheid)+" "+p.eenheid:""}`.trim());
+  const afv=(r.afvoer||[]).map(p=>`${p.soort||"?"} ${p.hoeveelheid!=null?fmt(p.hoeveelheid)+" "+p.eenheid:""}`.trim());
+  if(lev.length||afv.length) L.push("");
+  if(lev.length) L.push(`*Aan te leveren:* ${lev.join(", ")}`);
+  if(afv.length) L.push(`*Af te voeren:* ${afv.join(", ")}`);
+  if(r.opmerkingen) L.push("",`*Opm.:* ${r.opmerkingen}`);
+  if((r.fotos||[]).length) L.push(`Foto's: ${r.fotos.length}`);
   return L.join("\n");
+}
+// ---------- CSV voor de opvolgingsfile (puntkomma, decimale komma, 1 lijn per post)
+function csvText(list){
+  const cell=v=>{ const s=String(v??""); return /[;"\n\r]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; };
+  const n=v=>v==null||v===""?"":String(Math.round(v*1000)/1000).replace(".",",");
+  const dmy=s=>{ const [y,m,d]=(s||"").split("-"); return d?`${d}/${m}/${y}`:""; };
+  const lt=[...new Set([...((lists.leidingen&&lists.leidingen.length)?lists.leidingen:LEID_DEFAULT), ...list.flatMap(r=>(r.posten||[]).flatMap(p=>Array.isArray(p.leidingen)?p.leidingen.map(x=>x.type):[]))].filter(Boolean))];
+  const head=["Datum","Week","BC-nummer","Werfleider","Categorie","Activiteit","Uitvoerder","Eigen/OA","Type","Opdrachtgever","Omschrijving","Hoeveelheid","Eenheid","Lengte (m)","Breedte sleuf (m)","Diepte sleuf (m)","Breedte bestrating (m)","Dikte fundering (cm)","Dikte zandvervanging (cm)","Bestrating (m²)","Uitgraving (m³)",...lt.map(t=>t+" (st)"),"Actie nodig","Opmerking","Rapport-ID"];
+  const out=[head.map(cell).join(";")];
+  list.slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||"")||(a.referentie||"").localeCompare(b.referentie||"")).forEach(r=>{
+    const base=[dmy(r.datum),isoWeek(asDate(r.datum)),r.referentie,nm(r.auteur)];
+    let first=true;
+    const row=(cat,act,uitv,oa,type,og,oms,q,eh,dims,leid)=>{ out.push([...base,cat,act,uitv,oa,type,og,oms,n(q),eh,...dims,...lt.map(t=>leid&&leid[t]!=null?n(leid[t]):""),r.actie?"ja":"",first?(r.opmerkingen||""):"",r.id||""].map(cell).join(";")); first=false; };
+    const noDims=Array(8).fill("");
+    (r.posten||[]).forEach(p=>{
+      const k=kindOf(p.activiteit), leid={}; if(Array.isArray(p.leidingen)) p.leidingen.forEach(x=>{ if(x.type) leid[x.type]=(leid[x.type]||0)+(x.hoeveelheid||0); });
+      const oms = k==="opkuis"?p.omschrijving : (k==="gen"?p.post:"");
+      row("Uitvoering",p.activiteit,p.uitvoerder||"",p.uitvoerderType==="oa"?"OA":p.uitvoerderType==="eigen"?"Eigen":"",p.type||"",p.opdrachtgever||"",oms||"",p.hoeveelheid,p.eenheid,
+        [n(p.lengte),n(p.breedteSleuf),n(p.diepte),n(p.breedteBestr),n(p.dikteFund),n(p.dikteZand),n(k==="bestr"?p.hoeveelheid:p.m2),n(p.m3)],leid);
+    });
+    (r.materiaal||[]).forEach(p=>row("Aan te leveren","",'','',p.product||"","",p.maat||"",p.hoeveelheid,p.eenheid,noDims,null));
+    (r.afvoer||[]).forEach(p=>row("Af te voeren","","","",p.soort||"","","",p.hoeveelheid,p.eenheid,noDims,null));
+    if(first) row("Opmerking","","","","","","",null,"",noDims,null);
+  });
+  return "﻿"+out.join("\r\n");
+}
+function csvFile(r){ return new File([csvText([r])],`BC${r.referentie||""}_${r.datum}.csv`,{type:"text/csv"}); }
+async function shareCsv(r,msgEl){
+  const f=csvFile(r);
+  try{ if(navigator.canShare && navigator.canShare({files:[f]})){ await navigator.share({files:[f], title:f.name}); return; } }
+  catch(e){ if(e&&e.name==="AbortError") return; }
+  try{ await downloads.save({filename:f.name,data:f}); if(msgEl){ msgEl.hidden=false; msgEl.className="msg ok"; msgEl.textContent="CSV opgeslagen in je downloads."; } }
+  catch(e){ if(msgEl){ msgEl.hidden=false; msgEl.className="msg err"; msgEl.textContent="CSV maken lukte niet op dit toestel."; } }
 }
 const waLink = r => "https://wa.me/?text="+encodeURIComponent(waText(r));
 let shareRep=null;
@@ -802,6 +835,7 @@ async function shareWithPhotos(r, msgEl){
   catch(e){ if(e&&e.name==="AbortError") return; if(msgEl){ msgEl.hidden=false; msgEl.className="msg err"; msgEl.textContent="Delen met foto's lukte niet op dit toestel. Gebruik de WhatsApp-knop en stuur de foto's apart."; } }
 }
 $("#wa-share").onclick=()=>shareRep&&shareWithPhotos(shareRep,$("#wa-msg"));
+$("#csv-share").onclick=()=>shareRep&&shareCsv(shareRep,$("#wa-msg"));
 function showShare(r){
   shareRep=r; $("#wa-share").hidden=!canShareFiles(r);
   const t=waText(r);
@@ -822,23 +856,8 @@ $("#flt-per").addEventListener("change",()=>{ try{ localStorage.setItem("wd-per"
 // CSV for Excel (semicolon, decimal comma)
 $("#export").onclick=async()=>{
   const m=$("#export-msg"); m.className="msg"; m.textContent="";
-  const cell=v=>{ const s=String(v??""); return /[;"\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; };
-  const n=v=>v==null?"":String(v).replace(".",",");
-  const lines=[["Datum","Week","BC-nummer","Werfleider","Soort","Activiteit / omschrijving","Hoeveelheid","Eenheid","Uitvoerder","Eigen ploeg / OA","Type","Opdrachtgever","Lengte (m)","Breedte bestrating (m)","Breedte sleuf (m)","Diepte sleuf (m)","Dikte fundering (cm)","Dikte zandvervanging (cm)","Aangelegde leidingen","Oppervlakte bestrating (m²)","Volume uitgraving (m³)","Actie","Opmerkingen"].join(";")];
-  const E=Array(13).fill("");
-  const pp=p=>[p.uitvoerder||"", p.uitvoerderType==="oa"?"Onderaannemer":p.uitvoerderType==="eigen"?"Eigen ploeg":"", p.type,p.opdrachtgever,n(p.lengte),n(p.breedteBestr),n(p.breedteSleuf),n(p.diepte),n(p.dikteFund),n(p.dikteZand),leidText(p.leidingen),n(p.m2),n(p.m3)];
-  filtered().slice().sort((a,b)=>a.datum.localeCompare(b.datum)).forEach(r=>{
-    const base=[r.datum,isoWeek(asDate(r.datum)),r.referentie,nm(r.auteur)];
-    const tail=[r.actie?"ja":"",r.opmerkingen];
-    let any=false;
-    (r.posten||[]).forEach(p=>{ any=true; lines.push([...base,p.activiteit||"Post",p.post,n(p.hoeveelheid),p.eenheid,...pp(p),...tail].map(cell).join(";")); });
-    (r.afvoer||[]).forEach(p=>{ any=true; lines.push([...base,"Af te voeren",p.soort,n(p.hoeveelheid),p.eenheid,...E,...tail].map(cell).join(";")); });
-    (r.materiaal||[]).forEach(p=>{ any=true; lines.push([...base,"Aan te leveren materiaal",matName(p),n(p.hoeveelheid),p.eenheid,...E,...tail].map(cell).join(";")); });
-    (r.transport||[]).forEach(p=>{ any=true; lines.push([...base,"Transport",[p.soort,p.firma].filter(Boolean).join(" "),n(p.ritten),"rit",...E,...tail].map(cell).join(";")); });
-    if(!any) lines.push([...base,"Opmerking","","","",...E,...tail].map(cell).join(";"));
-  });
-  try{ await downloads.save({filename:`werfdagboek_${iso(new Date())}.csv`, data:"﻿"+lines.join("\r\n")}); m.className="msg ok"; m.textContent="Export klaar."; }
-  catch(e){ if(e?.code!=="declined"){ m.className="msg err"; m.textContent="Exporteren lukte niet in deze weergave."; } }
+  try{ await downloads.save({filename:`werfdagboek_${iso(new Date())}.csv`, data:csvText(filtered())}); m.className="msg ok"; m.textContent="Export klaar."; }
+  catch(e){ if(e?.code!=="declined"){ m.className="msg err"; m.textContent="Exporteren lukte niet op dit toestel."; } }
 };
 
 // ---------- uitwisselen tussen toestellen (zonder foto's)
