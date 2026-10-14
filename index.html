@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Werfdagboek Sibelga</title>
+<style>
+/* Layout: one narrow work column (thumb-first, werf op gsm), sticky tab strip, overzicht widens to two columns on desktop */
+:root{
+  --bg:#EEF0EC; --surface:#FFFFFF; --sunk:#E3E6E0; --line:#C9CEC6;
+  --fg:#1B211E; --muted:#5D665F;
+  --accent:#C2410C; --accent-ink:#FFFFFF; --accent-soft:#FBE3D6;
+  --ok:#1F7A4D; --warn:#A16207; --warn-soft:#FEF0C7;
+  --display:"Archivo Narrow","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141816; --surface:#1D2320; --sunk:#252C28; --line:#36403A;
+  --fg:#E7EBE6; --muted:#9AA59D;
+  --accent:#F07A3E; --accent-ink:#1A0E06; --accent-soft:#3A2418;
+  --ok:#5CC08C; --warn:#E5B54A; --warn-soft:#3A3018; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141816; --surface:#1D2320; --sunk:#252C28; --line:#36403A;
+  --fg:#E7EBE6; --muted:#9AA59D;
+  --accent:#F07A3E; --accent-ink:#1A0E06; --accent-soft:#3A2418;
+  --ok:#5CC08C; --warn:#E5B54A; --warn-soft:#3A3018; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--body);padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:720px;margin:0 auto}
+.wrap.wide{max-width:1040px}
+header.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:18px 10px}
+h1{font:700 1.75rem/1.1 var(--display);letter-spacing:.01em;margin:0;text-wrap:balance}
+h1 small{display:block;font:500 .78rem/1.3 var(--body);color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
+.who{font-size:.85rem;color:var(--muted);display:flex;align-items:center;gap:8px}
+.who img{width:24px;height:24px;border-radius:50%}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:4px;padding-block:8px;border-bottom:2px solid var(--fg);margin-bottom:18px}
+nav.tabs button{flex:1;white-space:nowrap;font:600 1rem var(--display);letter-spacing:.04em;text-transform:uppercase;background:none;border:0;color:var(--muted);padding:10px 6px;border-radius:var(--r) var(--r) 0 0;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--fg);color:var(--bg)}
+nav.tabs button:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+fieldset{border:0;margin:0 0 22px;padding:0}
+legend{font:700 1.05rem var(--display);text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:10px;width:100%;padding:0 0 8px;border-bottom:1px solid var(--line);margin-bottom:12px}
+legend .n{font:500 .75rem var(--mono);color:var(--accent);border:1px solid var(--accent);border-radius:3px;padding:0 5px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid .full{grid-column:1/-1}
+@media (max-width:480px){.grid:not(.keep2){grid-template-columns:minmax(0,1fr)}.keep2{gap:10px 8px}}
+label{display:flex;flex-direction:column;gap:4px;font-size:.78rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);min-width:0}
+input,select,textarea{font:400 1rem var(--body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 11px;width:100%;min-width:0;text-transform:none;letter-spacing:0}
+input[type=number],.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+textarea{min-height:96px;resize:vertical}
+.rows{display:flex;flex-direction:column;gap:8px}
+.row{display:grid;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+.row.post{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:12px}
+.post-head{display:grid;grid-template-columns:minmax(0,1fr) 36px;gap:6px;align-items:center}
+.post-head select{font-weight:600}
+.params{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.params:empty{display:none}
+.params{align-items:end}
+.params label{justify-content:flex-end}
+.params input,.params select,.post-head select,.leid-row select,.leid-row input,.grid input,.grid select,.row input,.row select{height:42px;box-sizing:border-box}.params .wide{grid-column:1/-1}
+.calc{font:500 .85rem var(--mono);color:var(--ok);font-variant-numeric:tabular-nums}
+.leid{display:flex;flex-direction:column;gap:6px;border-top:1px dashed var(--line);padding-top:10px}
+.leid-h{font-size:.78rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.leid-rows{display:flex;flex-direction:column;gap:6px}
+.leid-row{display:grid;grid-template-columns:minmax(0,1fr) 92px 22px 36px;gap:6px;align-items:center}
+.leid-row .eh{font:500 .85rem var(--mono);color:var(--muted)}
+.leid .add{padding:6px 10px;font-size:.85rem}
+.calc:empty{display:none}
+.sub{display:block;font-size:.8rem;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0}
+.row.mat,.row.afv{grid-template-columns:minmax(0,1fr) 84px 76px 36px}
+.row.mat .ps{grid-row:1;grid-column:1}.row.mat .q{grid-row:1;grid-column:2}.row.mat .u{grid-row:1;grid-column:3}.row.mat .x{grid-row:1;grid-column:4}
+.row.mat .p{grid-row:2;grid-column:1/4}.row.mat .m{grid-row:3;grid-column:1/4}
+.row.trans{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 70px 36px}
+@media (max-width:560px){
+  .params{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .row.afv{grid-template-columns:minmax(0,1fr) 72px 70px 36px;gap:6px}
+  .row.mat{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 36px;gap:6px}
+  .row.mat .ps{grid-column:1/3}.row.mat .x{grid-column:3}.row.mat .q{grid-row:2;grid-column:1}.row.mat .u{grid-row:2;grid-column:2}
+  .row.mat .p{grid-row:3;grid-column:1/3}.row.mat .m{grid-row:4;grid-column:1/3}
+  nav.tabs button{font-size:.9rem;padding:10px 4px;letter-spacing:.02em}
+  .row.trans{grid-template-columns:minmax(0,1fr) 70px 36px;grid-template-areas:"f f x" "t r r"}
+  .row.trans .f{grid-area:f}.row.trans .t{grid-area:t}.row.trans .r{grid-area:r}.row.trans .x{grid-area:x}
+}
+.row input,.row select{padding:8px 9px}
+.x{width:36px;height:36px;border:0;background:none;color:var(--muted);font-size:1.3rem;cursor:pointer;border-radius:var(--r)}
+.x:hover{background:var(--sunk);color:var(--fg)}
+.add{align-self:flex-start;background:none;border:1px dashed var(--line);color:var(--fg);border-radius:var(--r);padding:8px 12px;font:600 .9rem var(--body);cursor:pointer}
+.add:hover{border-color:var(--accent);color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:.92rem;cursor:pointer;text-transform:none;letter-spacing:0;color:var(--fg);font-weight:500}
+.chip input{width:auto;margin:0}
+.chip:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.ph{position:relative;aspect-ratio:1;border-radius:var(--r);overflow:hidden;background:var(--sunk);max-width:100%}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph button{position:absolute;top:4px;right:4px;width:28px;height:28px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;cursor:pointer}
+.ph.busy::after{content:"Uploaden…";position:absolute;inset:0;display:grid;place-items:center;font-size:.75rem;color:var(--muted)}
+.camera{display:grid;place-items:center;aspect-ratio:1;border:1px dashed var(--line);border-radius:var(--r);cursor:pointer;color:var(--muted);font-size:.8rem;text-align:center;text-transform:none;letter-spacing:0;font-weight:500;padding:6px}
+.camera input{display:none}
+.flag{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);text-transform:none;letter-spacing:0;font-size:.95rem;color:var(--fg);font-weight:500;flex-direction:row;cursor:pointer}
+.flag input{width:20px;height:20px}
+.flag:has(input:checked){border-color:var(--warn);background:var(--warn-soft)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;position:sticky;bottom:0;background:var(--bg);padding-block:12px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+.btn{font:600 1rem var(--body);border-radius:var(--r);padding:12px 18px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);flex:1}
+.btn.small{padding:7px 12px;font-size:.88rem}
+.btn.danger{color:var(--accent);border-color:var(--accent)}
+.btn:disabled{opacity:.55;cursor:default}
+.msg{font-size:.9rem;color:var(--muted)}
+.msg.err{color:var(--accent)}
+.msg.ok{color:var(--ok)}
+.share{background:var(--surface);border:1px solid var(--ok);border-radius:var(--r);padding:12px;margin-bottom:16px;display:flex;flex-direction:column;gap:10px}
+.share-btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn.wa{background:var(--ok);border-color:var(--ok);color:var(--accent-ink);text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn.wa svg{width:18px;height:18px;fill:currentColor}
+.wa-prev{margin:0;max-height:180px;overflow:auto;background:var(--sunk);border-radius:var(--r);padding:10px;font:400 .82rem/1.45 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere}
+.banner{background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--r);padding:10px 12px;margin-bottom:16px;font-size:.92rem;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+/* Overzicht */
+.filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px}
+@media (max-width:560px){.filters{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.filters .wide{grid-column:1/-1}}
+.stats{display:flex;gap:24px;flex-wrap:wrap;padding:12px 0;border-block:1px solid var(--line);margin-bottom:18px}
+.stat b{display:block;font:600 1.6rem/1 var(--mono);font-variant-numeric:tabular-nums}
+.stat span{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.stat.warn b{color:var(--warn)}
+.cols{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:860px){.cols{grid-template-columns:minmax(0,1fr)}}
+h2{font:700 1.05rem var(--display);text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.list{display:flex;flex-direction:column;gap:8px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:11px 13px;cursor:pointer;display:grid;grid-template-columns:62px minmax(0,1fr);gap:12px;text-align:left;width:100%;color:var(--fg);font:inherit}
+.card:hover{border-color:var(--fg)}
+.card .d{font:600 .8rem/1.25 var(--mono);color:var(--muted);text-transform:uppercase}
+.card .d b{display:block;font-size:1.25rem;color:var(--fg)}
+.card .t{font-weight:600;overflow-wrap:anywhere}
+.card .s{font-size:.85rem;color:var(--muted);overflow-wrap:anywhere}
+.pill{display:inline-block;font:600 .7rem/1 var(--body);letter-spacing:.05em;text-transform:uppercase;padding:4px 7px;border-radius:3px;margin-left:6px;vertical-align:2px}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.cam{background:var(--sunk);color:var(--muted)}
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;background:var(--sunk)}
+tr.grp td{background:var(--accent-soft);font:700 .8rem var(--display);text-transform:uppercase;letter-spacing:.05em}
+td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.empty{border:1px dashed var(--line);border-radius:var(--r);padding:22px;text-align:center;color:var(--muted)}
+/* detail */
+.detail{background:var(--surface);border:1px solid var(--fg);border-radius:var(--r);padding:16px;margin-bottom:18px}
+.detail h3{font:700 1.3rem/1.2 var(--display);margin:0 0 2px;overflow-wrap:anywhere}
+.detail .meta{color:var(--muted);font-size:.88rem;margin-bottom:12px}
+.detail h4{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:14px 0 6px}
+.detail p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.detail .photos a{display:block}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.9rem}
+.lists textarea{min-height:140px;font-family:var(--body)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Werfdagboek">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#1B211E">
+</head>
+<body>
+
+
+
+<div class="wrap" id="wrap">
+  <header class="top">
+    <h1>Werfdagboek Sibelga<small>Dagrapport uitgevoerde werken · offline · <span id="today"></span></small></h1>
+    <div class="who" id="who"></div>
+  </header>
+
+<div class="banner" id="install-hint" hidden><span>Zet het Werfdagboek op je beginscherm: tik in Safari op <b>Deel</b> en kies <b>Zet op beginscherm</b>. Daarna werkt het ook zonder internet.</span><button class="btn small" type="button" id="install-close">OK</button></div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-new" aria-selected="true" data-view="new">Nieuw</button>
+    <button role="tab" id="tab-list" aria-selected="false" data-view="list">Overzicht</button>
+    <button role="tab" id="tab-cfg" aria-selected="false" data-view="cfg" hidden>Instellingen</button>
+  </nav>
+
+  <!-- NIEUW RAPPORT -->
+  <section id="view-new">
+    <div class="share" id="share" hidden role="status">
+      <div><b>Rapport opgeslagen.</b> Stuur het door naar de werfleidersgroep.</div>
+      <div class="share-btns">
+        <a class="btn wa" id="wa-link" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.2c0-.1-.2-.2-.4-.3Z"/></svg>Verstuur via WhatsApp</a>
+        <button class="btn small" type="button" id="wa-share" hidden>Delen met foto's</button>
+        <button class="btn small" type="button" id="wa-copy">Kopieer tekst</button>
+        <button class="btn small" type="button" id="share-close">Sluiten</button>
+      </div>
+      <pre class="wa-prev" id="wa-prev"></pre>
+      <p class="msg" id="wa-msg" hidden></p>
+    </div>
+    <div class="banner" id="edit-banner" hidden><span>Je bewerkt een bestaand rapport.</span><button class="btn small" type="button" id="cancel-edit">Annuleren</button></div>
+    <form id="form" novalidate>
+      <fieldset>
+        <legend><span class="n">1</span>Werf</legend>
+        <div class="grid keep2">
+          <label>Datum<input type="date" id="f-datum" required></label>
+          <label>BC-nummer<input id="f-ref" list="dl-werven" inputmode="text" placeholder="BC-nummer" autocomplete="off" required></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend><span class="n">2</span>Uitgevoerde werken</legend>
+        <div class="rows" id="rows-post"></div>
+        <button class="add" type="button" data-add="post" style="margin-top:8px">+ Post toevoegen</button>
+      </fieldset>
+
+      <fieldset>
+        <legend><span class="n">3</span>Aan te leveren materiaal</legend>
+        <div class="rows" id="rows-mat"></div>
+        <button class="add" type="button" data-add="mat" style="margin-top:8px">+ Materiaal toevoegen</button>
+      </fieldset>
+
+      <fieldset>
+        <legend><span class="n">4</span>Af te voeren (stort)</legend>
+        <div class="rows" id="rows-afv"></div>
+        <button class="add" type="button" data-add="afv" style="margin-top:8px">+ Afvoer toevoegen</button>
+      </fieldset>
+
+      <fieldset>
+        <legend><span class="n">5</span>Foto's &amp; opmerkingen</legend>
+        <div class="photos" id="photos" style="margin-bottom:12px">
+          <label class="camera" id="cam">Foto nemen of kiezen<input type="file" id="f-foto" accept="image/*" multiple></label>
+        </div>
+        <p class="msg" id="photo-msg" hidden></p>
+        <label>Opmerkingen<textarea id="f-opm" placeholder="Wat liep er goed of fout, schade, afspraken met bewoners of nutsbedrijven…"></textarea></label>
+        <label class="flag" style="margin-top:10px"><input type="checkbox" id="f-actie">Probleem — actie nodig van projectleiding</label>
+      </fieldset>
+
+      <div class="actions">
+        <button class="btn primary" type="submit" id="save">Rapport opslaan</button>
+        <span class="msg" id="save-msg" role="status"></span>
+      </div>
+    </form>
+  </section>
+
+  <!-- OVERZICHT -->
+  <section id="view-list" hidden>
+    <div id="detail"></div>
+    <div class="filters">
+      <label>Periode<select id="flt-per">
+        <option value="week">Deze week</option><option value="prev">Vorige week</option>
+        <option value="month">Deze maand</option><option value="all">Alles</option></select></label>
+      <label>Werfleider<select id="flt-wl"><option value="">Iedereen</option></select></label>
+      <label class="wide">Zoeken<input id="flt-q" placeholder="BC-nummer, uitvoerder, opmerking…" autocomplete="off"></label>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="cols">
+      <div>
+        <h2>Rapporten</h2>
+        <div class="list" id="list"></div>
+      </div>
+      <div>
+        <h2>Totalen per post <button class="btn small" type="button" id="export" hidden>Export CSV</button></h2>
+        <div id="totals"></div>
+        <p class="msg" id="export-msg"></p>
+        <div class="share-btns" style="margin-top:16px">
+          <button class="btn small" type="button" id="bk-out">Rapporten exporteren (bestand)</button>
+          <label class="btn small" style="text-transform:none;letter-spacing:0;font-weight:600;color:var(--fg);cursor:pointer">Rapporten inlezen<input type="file" id="bk-in" accept=".json,application/json" hidden></label>
+        </div>
+        <p class="msg" id="bk-msg"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIJSTEN -->
+  <section id="view-cfg" class="lists" hidden>
+    <label style="margin-bottom:14px">Jouw naam (staat in elk WhatsApp-bericht)<input id="c-naam" autocomplete="name" placeholder="bv. Cedric Laleman"></label>
+    <p class="msg" style="margin-top:0">Eén waarde per lijn. Deze lijsten verschijnen als suggesties in het formulier van de werfleiders.</p>
+    <div class="grid">
+      <label class="full">Activiteiten<textarea id="c-activiteiten"></textarea></label>
+      <label>Ploegbazen<textarea id="c-ploegbazen"></textarea></label>
+      <label>Onderaannemers<textarea id="c-onderaannemers"></textarea></label>
+      <label>Materialen<textarea id="c-producten"></textarea></label>
+      <label>Afmetingen boordstenen<textarea id="c-maatBoordstenen"></textarea></label>
+      <label>Posten (meetstaat)<textarea id="c-posten"></textarea></label>
+      <label>Lopende BC-nummers<textarea id="c-werven"></textarea></label>
+      <label>Types bestrating<textarea id="c-typesBestrating"></textarea></label>
+      <label>Aangelegde leidingen<textarea id="c-leidingen"></textarea></label>
+      <label>Types kabel<textarea id="c-typesKabel"></textarea></label>
+      <label>Types bakken<textarea id="c-typesBak"></textarea></label>
+      <label>Opdrachtgevers<textarea id="c-opdrachtgevers"></textarea></label>
+    </div>
+    <div class="actions"><button class="btn primary" type="button" id="cfg-save">Instellingen opslaan</button><span class="msg" id="cfg-msg" role="status"></span></div>
+  </section>
+
+  <datalist id="dl-werven"></datalist><datalist id="dl-ploegbazen"></datalist><datalist id="dl-posten"></datalist>
+  <datalist id="dl-lev"></datalist><datalist id="dl-prod"></datalist><datalist id="dl-trans"></datalist>
+  <datalist id="dl-tb"></datalist><datalist id="dl-tk"></datalist><datalist id="dl-tbak"></datalist><datalist id="dl-og"></datalist><datalist id="dl-leid"></datalist><datalist id="dl-maat"></datalist>
+</div>
+
+<script>
+/* Offline opslag: rapporten en lijsten in localStorage, foto's in IndexedDB van dit toestel */
+(function(){
+const LS_R="wd-off-rapporten", LS_L="wd-off-lijsten", LS_N="wd-off-naam", LS_ID="wd-off-id";
+const DEFAULT_LISTS={"activiteiten": ["Graafwerk", "Herbestrating", "Plaatsen van bakken", "Leggen van leidingen", "Trekken van kabels", "Opkuisen van de werf", "Verhuizen naar andere werf"], "leidingen": ["LS", "HS", "EP", "FOP", "DB7", "DB6", "SRV 7x12+2x10", "HDPE-50mm", "Waterleiding", "Gasleiding"], "onderaannemers": ["BKM Pavetech", "Cevik-Construct"], "opdrachtgevers": ["Sibelga"], "ploegbazen": ["Eric Hannes", "Remzi Taslidere", "Celal Altincanak", "Cüneyt Teker"], "posten": [], "producten": ["Stabilisé", "Beton", "Zand", "Wit zand", "Dolomiet", "Zwarte grond", "Dallen", "Klinkers", "Boordstenen", "Flowjoint", "Noppenfolie"], "typesBak": [], "typesBestrating": ["Dallen", "Klinkers", "Platines", "Kasseien", "Blauwe steen", "Mozaïek", "Beton", "Asfalt", "Volle grond", "Dolomiet"], "typesKabel": [], "werven": [], "maatBoordstenen": []};
+const rd=(k,d)=>{ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } };
+const wr=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){ throw {code:"quota_exceeded"}; } };
+let reps=rd(LS_R,{}), lijsten=rd(LS_L,null)||DEFAULT_LISTS;
+let devId=null; try{ devId=localStorage.getItem(LS_ID); if(!devId){ devId="t"+Date.now().toString(36)+Math.random().toString(36).slice(2,7); localStorage.setItem(LS_ID,devId); } }catch(e){ devId="t-tijdelijk"; }
+const listeners=[]; const fire=()=>listeners.forEach(f=>f());
+const snap=(id,data)=>({id,exists:data!=null,data:()=>data,metadata:{fromCache:false,hasPendingWrites:false}});
+// foto's
+const idb=new Promise((res,rej)=>{ try{ const r=indexedDB.open("werfdagboek",1); r.onupgradeneeded=()=>r.result.createObjectStore("fotos"); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }catch(e){ rej(e); } });
+const tx=(mode,fn)=>idb.then(d=>new Promise((res,rej)=>{ const t=d.transaction("fotos",mode); const out=fn(t.objectStore("fotos")); t.oncomplete=()=>res(out&&out.result); t.onerror=()=>rej(t.error); }));
+window.__blobs={}; window.__blobUrls={};
+window.__blobUrl=id=>window.__blobUrls[id]||"";
+window.__loadBlobs=async ids=>{ for(const id of ids){ if(window.__blobUrls[id]) continue; try{ const b=await tx("readonly",s=>s.get(id)); if(b){ window.__blobs[id]=b; window.__blobUrls[id]=URL.createObjectURL(b); } }catch(e){} } };
+function docRef(path){
+  const [c,id]=path.split("/"), cur=()=>c==="config"?lijsten:reps[id];
+  return { id, path,
+    get:async()=>snap(id,cur()),
+    set:async d=>{ if(c==="config"){ lijsten=d; wr(LS_L,d); } else { reps[id]=d; wr(LS_R,reps); } fire(); },
+    update:async d=>{ if(c==="config"){ lijsten={...lijsten,...d}; wr(LS_L,lijsten); } else { reps[id]={...reps[id],...d}; wr(LS_R,reps); } fire(); },
+    delete:async()=>{ if(c==="rapporten"){ const f=(reps[id]||{}).fotos||[]; delete reps[id]; wr(LS_R,reps); f.forEach(fid=>tx("readwrite",s=>s.delete(fid)).catch(()=>{})); } fire(); },
+    onSnapshot:next=>{ const f=()=>next(snap(id,cur())); listeners.push(f); setTimeout(f,0); return ()=>{}; } };
+}
+const col={ orderBy(){ return this; }, limit(){ return this; }, doc:id=>docRef("rapporten/"+id),
+  onSnapshot(next){ const f=()=>{ const docs=Object.entries(reps).map(([id,d])=>snap(id,d)).sort((a,b)=>(b.data().datum||"").localeCompare(a.data().datum||"")); next({docs,size:docs.length,empty:!docs.length}); }; listeners.push(f); setTimeout(f,0); return ()=>{}; },
+  async add(d){ const id="r"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); reps[id]=d; wr(LS_R,reps); fire(); return docRef("rapporten/"+id); } };
+const db={ doc:docRef, collection:()=>col };
+const myName=()=>{ try{ return localStorage.getItem(LS_N)||""; }catch(e){ return ""; } };
+const user={ me:async()=>({id:devId,name:myName(),avatarUrl:"",color:"",email:null,isOwner:true,canEdit:true}),
+  profiles:async ids=>{ const o={}; (Array.isArray(ids)?ids:[ids]).forEach(id=>{ const r=Object.values(reps).find(x=>x.auteur===id&&x.auteurNaam); o[id]={id,name:id===devId?myName():(r?r.auteurNaam:""),avatarUrl:"",color:"",email:null,isMe:id===devId,guest:false}; }); return o; } };
+const assets={ upload:async blob=>{ const id="f"+Date.now().toString(36)+Math.random().toString(36).slice(2,8); await tx("readwrite",s=>s.put(blob,id)); window.__blobs[id]=blob; const url=URL.createObjectURL(blob); window.__blobUrls[id]=url; return {id,url,sizeBytes:blob.size,contentType:blob.type}; } };
+const downloads={ save:async({filename,data})=>{ const b=data instanceof Blob?data:new Blob([data],{type:"text/plain;charset=utf-8"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=filename; document.body.append(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500); return {status:"saved"}; } };
+const caps={db,user,assets,downloads};
+window.claude={ use:async n=>caps[n]||null };
+window.__offline={ reps:()=>reps, importReps:obj=>{ let n=0; Object.entries(obj||{}).forEach(([id,d])=>{ if(d&&d.datum&&!reps[id]){ reps[id]=d; n++; } }); wr(LS_R,reps); fire(); return n; }, setName:v=>{ try{ localStorage.setItem(LS_N,v); }catch(e){} }, name:myName };
+})();
+</script>
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const GEMEENTEN = ["Anderlecht","Brussel","Elsene","Etterbeek","Evere","Ganshoren","Jette","Koekelberg","Oudergem","Schaarbeek","Sint-Agatha-Berchem","Sint-Gillis","Sint-Jans-Molenbeek","Sint-Joost-ten-Node","Sint-Lambrechts-Woluwe","Sint-Pieters-Woluwe","Ukkel","Vorst","Watermaal-Bosvoorde"];
+const EH_POST = ["m","m²","m³","st","ton","u","forfait"];
+const EH_MAT = ["m³","ton","st","m²","m","pal"];
+const TR_TYPE = ["Aanvoer","Afvoer / stort","Machine / kraan"];
+const ACT_DEFAULT = [["Graafwerk","m"],["Herbestrating","m²"],["Plaatsen van bakken","st"],["Leggen van leidingen","m"],["Trekken van kabels","m"],["Opkuisen van de werf","u"],["Verhuizen naar andere werf","u"]];
+const actList = () => (lists.activiteiten && lists.activiteiten.length) ? lists.activiteiten : ACT_DEFAULT.map(a=>a[0]);
+const actUnit = a => (ACT_DEFAULT.find(x=>x[0]===a)||[])[1];
+const matList = () => (lists.producten&&lists.producten.length)?lists.producten:["Stabilisé","Beton","Zand","Wit zand","Dolomiet","Zwarte grond","Dallen","Klinkers","Boordstenen","Flowjoint","Noppenfolie"];
+function matOpts(sel){ const L=matList(), other=sel && !L.includes(sel); return `<option value="">Kies materiaal…</option>`+opts(L, other?"":sel)+`<option value="__ander"${other?" selected":""}>Ander materiaal…</option>`; }
+const isBoord = p => /boord/i.test(p||"");
+const matUnit = p => /klinker|dal(len)?\b|tegel/i.test(p||"") ? "pal" : isBoord(p) ? "st" : /stabili|zand|beton|dolom|dolem|grond/i.test(p||"") ? "m³" : "";
+const LIST_KEYS = ["maatBoordstenen","activiteiten","ploegbazen","onderaannemers","producten","posten","werven","typesBestrating","leidingen","typesKabel","typesBak","opdrachtgevers"];
+// Parameters per soort activiteit (herkend aan de naam, zodat hernoemen in Lijsten blijft werken)
+const kindOf = a => !a ? "" : /graaf/i.test(a) ? "graaf" : /bestrat/i.test(a) ? "bestr" : /kabel/i.test(a) ? "kabel" : /bak/i.test(a) ? "bak" : /opkuis/i.test(a) ? "opkuis" : "gen";
+const SPEC = {
+  graaf:[["type","Type bestrating","dl-tb",""],["lengte","Lengte sleuf","","m"],["breedteBestr","Breedte bestrating","","m"],["breedteSleuf","Breedte sleuf","","m"],["dikteFund","Dikte fundering","","cm"],["diepte","Diepte sleuf","","m"],["dikteZand","Dikte zandvervanging","","cm"]],
+  bestr:[["type","Type bestrating","dl-tb",""],["lengte","Lengte","","m"],["breedteBestr","Breedte bestrating","","m"]],
+  kabel:[["type","Type kabel","dl-tk",""],["lengte","Lengte","","m"]],
+  bak:[["opdrachtgever","Opdrachtgever","dl-og",""],["type","Type bak","dl-tbak",""],["aantal","Hoeveelheid","","st"]],
+  opkuis:[["omschrijving","Wat werd opgekuist","","",1],["duur","Duur","","u"]]
+};
+const NUMF = new Set(["lengte","breedteBestr","breedteSleuf","dikteFund","diepte","dikteZand","aantal","duur"]);
+const PARAM_KEYS = ["type","opdrachtgever","lengte","breedteBestr","breedteSleuf","diepte","dikteFund","dikteZand","leidingen","aantal"];
+function computePost(kind, v){
+  let q=null, eh="", m2=null, m3=null, desc=v.type||"";
+  const L=v.lengte, Bb=v.breedteBestr, Bs=v.breedteSleuf, D=v.diepte;
+  if(L!=null && Bb!=null) m2=L*Bb;
+  if(kind==="graaf"){ q=L; eh="m"; if(L!=null && Bs!=null && D!=null) m3=L*Bs*D; }
+  if(kind==="bestr"){ q=m2; eh="m²"; m2=null; }
+  if(kind==="kabel"){ q=L; eh="m"; m2=null; }
+  if(kind==="bak"){ q=v.aantal; eh="st"; m2=null; desc=[v.opdrachtgever,v.type].filter(Boolean).join(" – "); }
+  if(kind==="opkuis"){ q=v.duur; eh="u"; m2=null; desc=v.omschrijving||""; }
+  const r3=x=>x==null?null:Math.round(x*1000)/1000;
+  return {q:r3(q),eh,m2:r3(m2),m3:r3(m3),desc};
+}
+function paramText(p){
+  const k=kindOf(p.activiteit), f=v=>v!=null&&v!==""?fmt(v):null, bits=[];
+  if(k==="graaf"){
+    if(p.type) bits.push(p.type);
+    if(f(p.lengte)) bits.push("L "+f(p.lengte)+" m");
+    if(f(p.breedteSleuf)||f(p.diepte)) bits.push("sleuf "+(f(p.breedteSleuf)??"?")+" × "+(f(p.diepte)??"?")+" m");
+    if(f(p.breedteBestr)) bits.push("bestr. "+f(p.breedteBestr)+" m breed");
+    if(f(p.dikteFund)) bits.push("fund. "+f(p.dikteFund)+" cm");
+    if(f(p.dikteZand)) bits.push("zandverv. "+f(p.dikteZand)+" cm");
+    const lt=leidText(p.leidingen); if(lt) bits.push("leidingen: "+lt);
+    if(p.m2!=null) bits.push("= "+fmt(p.m2)+" m² bestrating");
+    if(p.m3!=null) bits.push(fmt(p.m3)+" m³ uitgraving");
+  } else if(k==="bestr"){ if(p.type) bits.push(p.type); if(f(p.lengte)||f(p.breedteBestr)) bits.push((f(p.lengte)??"?")+" × "+(f(p.breedteBestr)??"?")+" m"); }
+  else if(k==="kabel"){ if(p.type) bits.push(p.type); }
+  else if(k==="bak"){ if(p.opdrachtgever) bits.push(p.opdrachtgever); if(p.type) bits.push(p.type); }
+  else if(k==="opkuis"){ if(p.omschrijving) bits.push(p.omschrijving); }
+  else if(p.post) bits.push(p.post);
+  return bits.join(" · ");
+}
+
+let db=null, user=null, assets=null, downloads=null, myId=null, iCanEdit=false;
+let reports=[], lists={}, editingId=null, photos=[], openId=null;
+const esc = s => String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num = v => { const n = parseFloat(String(v ?? "").replace(",", ".")); return isFinite(n) ? n : null; };
+const fmt = n => (Math.round(n*100)/100).toLocaleString("nl-BE");
+const iso = d => { const z = new Date(d.getTime()-d.getTimezoneOffset()*60000); return z.toISOString().slice(0,10); };
+const asDate = s => new Date(s+"T12:00:00");
+function isoWeek(d){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); const day=t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-day); const y=new Date(Date.UTC(t.getUTCFullYear(),0,1)); return Math.ceil(((t-y)/864e5+1)/7); }
+const now = new Date();
+$("#today").textContent = now.toLocaleDateString("nl-BE",{weekday:"long",day:"numeric",month:"long"}) + " · week " + isoWeek(now);
+
+// ---------- tabs
+function show(view){
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected", String(b.dataset.view===view)));
+  ["new","list","cfg"].forEach(v=>$("#view-"+v).hidden = v!==view);
+  $("#wrap").classList.toggle("wide", view==="list");
+  try{ localStorage.setItem("wd-tab", view); }catch(e){}
+}
+document.querySelectorAll("nav.tabs button").forEach(b=>b.addEventListener("click",()=>show(b.dataset.view)));
+
+// ---------- form building
+function opts(arr, sel){ return arr.map(v=>`<option${v===sel?" selected":""}>${esc(v)}</option>`).join(""); }
+function addRow(kind, d={}){
+  const r=document.createElement("div"); r.className="row "+kind; r.dataset.kind=kind;
+  if(kind==="post") return buildPost(r, d);
+  if(kind==="mat") r.innerHTML=`<select class="ps" aria-label="Materiaal">${matOpts(d.product||"")}</select>
+    <input class="p" placeholder="Ander materiaal" value="${esc(d.product)}" aria-label="Ander materiaal"${d.product && !matList().includes(d.product)?"":" hidden"}>
+    <input class="q num" inputmode="decimal" placeholder="0" value="${d.hoeveelheid ?? ""}" aria-label="Hoeveelheid">
+    <select class="u" aria-label="Eenheid">${opts(EH_MAT, d.eenheid||matUnit(d.product)||"m³")}</select>
+    <input class="m" list="dl-maat" placeholder="Afmeting, bv. 100×30×15 cm" value="${esc(d.maat)}" aria-label="Afmeting boordsteen"${isBoord(d.product)?"":" hidden"}>`;
+  if(kind==="mat"){ r.querySelector(".ps").addEventListener("change",e=>{ const v=e.target.value, pi=r.querySelector(".p"); if(v==="__ander"){ pi.hidden=false; pi.value=""; pi.focus(); } else { pi.hidden=true; pi.value=v; } pi.dispatchEvent(new Event("input",{bubbles:true})); });
+    r.querySelector(".p").addEventListener("input",e=>{ const v=e.target.value, u=matUnit(v); if(u) r.querySelector(".u").value=u; r.querySelector(".m").hidden=!isBoord(v); }); }
+  if(kind==="afv") r.innerHTML=`<select class="s" aria-label="Soort afvoer"><option value="">Kies soort…</option>${opts(["Asfalt","Beton","Grond"], d.soort||"")}</select>
+    <input class="q num" inputmode="decimal" placeholder="0" value="${d.hoeveelheid ?? ""}" aria-label="Hoeveelheid">
+    <select class="u" aria-label="Eenheid">${opts(["m³","ton"], d.eenheid||"m³")}</select>`;
+  if(kind==="trans") r.innerHTML=`<input class="f" list="dl-trans" placeholder="Transporteur" value="${esc(d.firma)}" aria-label="Transporteur">
+    <select class="t" aria-label="Soort">${opts(TR_TYPE, d.soort||"Afvoer / stort")}</select>
+    <input class="r num" inputmode="numeric" placeholder="ritten" value="${d.ritten ?? ""}" aria-label="Aantal ritten">`;
+  const x=document.createElement("button"); x.type="button"; x.className="x"; x.textContent="×"; x.setAttribute("aria-label","Lijn verwijderen");
+  x.onclick=()=>{ r.remove(); saveDraft(); }; r.append(x);
+  $("#rows-"+kind).append(r);
+  return r;
+}
+function xBtn(r){ const x=document.createElement("button"); x.type="button"; x.className="x"; x.textContent="×"; x.setAttribute("aria-label","Post verwijderen"); x.onclick=()=>{ r.remove(); saveDraft(); }; return x; }
+function buildPost(r, d){
+  r.innerHTML=`<div class="post-head"><select class="a" aria-label="Activiteit"><option value="">Kies activiteit…</option>${opts([...new Set([...actList(), ...(d.activiteit?[d.activiteit]:[])])], d.activiteit)}</select></div>
+    <div class="params"></div><div class="calc" aria-live="polite"></div>`;
+  r.querySelector(".post-head").append(xBtn(r));
+  renderParams(r, d);
+  r.querySelector(".a").addEventListener("change",()=>{ const keep=readPost(r); renderParams(r, keep); r.querySelector(".params input")?.focus(); });
+  r.addEventListener("input",()=>updateCalc(r));
+  $("#rows-post").append(r);
+  return r;
+}
+function renderParams(r, d){
+  const act=r.querySelector(".a").value, kind=kindOf(act), P=r.querySelector(".params");
+  r.dataset.pk=kind;
+  if(!kind){ P.innerHTML=""; updateCalc(r); return; }
+  if(kind==="gen") P.innerHTML=`<label class="wide">Omschrijving<input class="p-post" list="dl-posten" value="${esc(d.post)}" autocomplete="off"></label>
+    <label>Hoeveelheid<input class="p-hoeveelheid num" inputmode="decimal" value="${d.hoeveelheid ?? ""}"></label>
+    <label>Eenheid<select class="p-eenheid">${opts(EH_POST, d.eenheid||actUnit(act)||"u")}</select></label>`;
+  else P.innerHTML=SPEC[kind].map(([k,lab,dl,u,wide])=> dl==="dl-tb"
+    ? `<label>${lab}<select class="p-${k} sel-tb">${tbOpts(d[k]||"")}</select></label>`
+    : `<label${wide?' class="wide"':""}>${lab}${u?` (${u})`:""}<input class="p-${k}${NUMF.has(k)?" num":""}"${NUMF.has(k)?' inputmode="decimal"':""}${dl?` list="${dl}"`:""} value="${esc(d[k] ?? "")}" autocomplete="off"></label>`).join("");
+  const prev=[...document.querySelectorAll("#rows-post .p-uitvoerder")].map(s=>s.value).filter(Boolean).pop()||"";
+  const def = d.uitvoerder ? (d.uitvoerderType==="oa"?"oa:":"eigen:")+d.uitvoerder : prev;
+  if(kind==="graaf"){
+    P.insertAdjacentHTML("beforeend", `<div class="wide leid"><span class="leid-h">Aangelegde leidingen</span><div class="leid-rows"></div><button class="add" type="button">+ Leiding toevoegen</button></div>`);
+    const lr=P.querySelector(".leid-rows");
+    (Array.isArray(d.leidingen)?d.leidingen:[]).forEach(l=>addLeiding(lr,l));
+    P.querySelector(".leid .add").onclick=()=>{ addLeiding(lr,{hoeveelheid:1}).querySelector("select").focus(); saveDraft(); };
+  }
+  P.insertAdjacentHTML("afterbegin", `<label class="wide">Uitgevoerd door<select class="p-uitvoerder">${uitvoerderOpts(def)}</select></label>`);
+  updateCalc(r);
+}
+const LEID_DEFAULT=["LS","HS","EP","FOP","DB7","DB6","SRV 7x12+2x10","HDPE-50mm","Waterleiding","Gasleiding"];
+function leidOpts(sel){
+  const all=[...new Set([...((lists.leidingen&&lists.leidingen.length)?lists.leidingen:LEID_DEFAULT), ...(sel?[sel]:[])])];
+  return `<option value="">Kies leiding…</option>`+opts(all, sel);
+}
+function addLeiding(box, l={}){
+  const row=document.createElement("div"); row.className="leid-row";
+  row.innerHTML=`<select class="l-type" aria-label="Type leiding">${leidOpts(l.type||"")}</select>
+    <input class="l-q num" inputmode="numeric" placeholder="0" value="${l.hoeveelheid ?? ""}" aria-label="Aantal stuks"><span class="eh">st</span>`;
+  const x=document.createElement("button"); x.type="button"; x.className="x"; x.textContent="×"; x.setAttribute("aria-label","Leiding verwijderen");
+  x.onclick=()=>{ row.remove(); saveDraft(); }; row.append(x);
+  box.append(row); return row;
+}
+const matName = p => (p.product||"?")+(p.maat?" "+p.maat:"");
+function leidText(l){
+  if(!l) return "";
+  if(!Array.isArray(l)) return String(l);
+  return l.map(x=>(x.hoeveelheid!=null?fmt(x.hoeveelheid)+"× ":"")+x.type).join(", ");
+}
+const TB_DEFAULT=["Dallen","Klinkers","Platines","Kasseien","Blauwe steen","Mozaïek","Beton","Asfalt","Volle grond","Dolomiet"];
+function tbOpts(sel){
+  const all=[...new Set([...((lists.typesBestrating&&lists.typesBestrating.length)?lists.typesBestrating:TB_DEFAULT), ...(sel?[sel]:[])])];
+  return `<option value="">Kies…</option>`+opts(all, sel);
+}
+function uitvoerderOpts(sel){
+  const eigen=[...new Set([...(lists.ploegbazen||[]), ...(sel.startsWith("eigen:")?[sel.slice(6)]:[])])];
+  const oa=[...new Set([...(lists.onderaannemers||[]), ...(sel.startsWith("oa:")?[sel.slice(3)]:[])])];
+  const o=(v,t)=>`<option value="${esc(v)}"${v===sel?" selected":""}>${esc(t)}</option>`;
+  return `<option value="">Kies ploeg of onderaannemer…</option>`
+    + (eigen.length?`<optgroup label="Eigen ploegen">${eigen.map(n=>o("eigen:"+n,"Ploeg "+n)).join("")}</optgroup>`:"")
+    + (oa.length?`<optgroup label="Onderaannemers">${oa.map(n=>o("oa:"+n,n)).join("")}</optgroup>`:"");
+}
+function uitv(r){ const v=r.querySelector(".p-uitvoerder")?.value||""; if(!v) return {uitvoerder:"",uitvoerderType:""}; const i=v.indexOf(":"); return {uitvoerderType:v.slice(0,i), uitvoerder:v.slice(i+1)}; }
+const uitvLabel = p => !p.uitvoerder ? "" : (p.uitvoerderType==="oa" ? p.uitvoerder+" (OA)" : "Ploeg "+p.uitvoerder);
+function readPost(r){
+  const act=r.querySelector(".a").value, kind=r.dataset.pk, v=c=>r.querySelector(".p-"+c)?.value.trim() ?? "";
+  if(!kind) return {activiteit:act};
+  if(kind==="gen") return {activiteit:act, ...uitv(r), post:v("post"), hoeveelheid:num(v("hoeveelheid")), eenheid:v("eenheid")};
+  const p={activiteit:act, ...uitv(r)};
+  SPEC[kind].forEach(([k])=>{ const raw=v(k); p[k]=NUMF.has(k)?num(raw):raw; });
+  if(kind==="graaf") p.leidingen=[...r.querySelectorAll(".leid-row")].map(x=>({type:x.querySelector(".l-type").value, hoeveelheid:num(x.querySelector(".l-q").value)})).filter(x=>x.type||x.hoeveelheid!=null);
+  const c=computePost(kind,p);
+  return {...p, post:c.desc, hoeveelheid:c.q, eenheid:c.eh, m2:c.m2, m3:c.m3};
+}
+function updateCalc(r){
+  const kind=r.dataset.pk, out=r.querySelector(".calc");
+  if(kind!=="graaf" && kind!=="bestr"){ out.textContent=""; return; }
+  const p=readPost(r), bits=[];
+  if(kind==="graaf"){ if(p.m2!=null) bits.push(fmt(p.m2)+" m² bestrating"); if(p.m3!=null) bits.push(fmt(p.m3)+" m³ uitgraving"); }
+  if(kind==="bestr" && p.hoeveelheid!=null) bits.push(fmt(p.hoeveelheid)+" m² herbestrating");
+  out.textContent = bits.length ? "= "+bits.join(" · ") : "";
+}
+document.querySelectorAll("[data-add]").forEach(b=>b.addEventListener("click",()=>{ const r=addRow(b.dataset.add); r.querySelector("input, select").focus(); }));
+
+function rows(kind){
+  return [...document.querySelectorAll("#rows-"+kind+" .row")].map(r=>{
+    const v=c=>r.querySelector("."+c)?.value.trim() ?? "";
+    if(kind==="post") return readPost(r);
+    if(kind==="mat") return {product:v("p"), maat:isBoord(v("p"))?v("m"):"", hoeveelheid:num(v("q")), eenheid:v("u")};
+    if(kind==="afv") return {soort:v("s"), hoeveelheid:num(v("q")), eenheid:v("u")};
+    return {firma:v("f"), soort:v("t"), ritten:num(v("r"))};
+  }).filter(o => kind==="post" ? (o.activiteit || o.post || o.hoeveelheid!=null) : kind==="mat" ? (o.product||o.hoeveelheid!=null) : kind==="afv" ? (o.soort||o.hoeveelheid!=null) : (o.firma||o.ritten!=null));
+}
+function readForm(){
+  return {
+    datum:$("#f-datum").value, referentie:$("#f-ref").value.trim(),
+    posten:rows("post"), materiaal:rows("mat"), afvoer:rows("afv"),
+    opmerkingen:$("#f-opm").value.trim(), actie:$("#f-actie").checked, fotos:photos.filter(p=>p.id).map(p=>p.id)
+  };
+}
+function fillForm(d){
+  $("#f-datum").value=d.datum||iso(new Date()); $("#f-ref").value=d.referentie||"";
+  $("#f-opm").value=d.opmerkingen||""; $("#f-actie").checked=!!d.actie;
+  ["post","mat","afv"].forEach(k=>$("#rows-"+k).innerHTML="");
+  (d.posten||[]).forEach(p=>addRow("post",p)); (d.materiaal||[]).forEach(p=>addRow("mat",p)); (d.afvoer||[]).forEach(p=>addRow("afv",p));
+  if(!(d.posten||[]).length) addRow("post");
+  renderOA(d.onderaannemers||[]);
+  photos=(d.fotos||[]).map(id=>({id,url:window.__blobUrl(id)})); renderPhotos();
+}
+function renderOA(checked){
+  if(!$("#f-oa")) return;
+  const cur = checked ?? [...document.querySelectorAll("#f-oa input:checked")].map(i=>i.value);
+  const all=[...new Set([...(lists.onderaannemers||[]), ...cur])];
+  $("#f-oa").innerHTML = all.length ? all.map((o,i)=>`<label class="chip"><input type="checkbox" id="oa-${i}" value="${esc(o)}"${cur.includes(o)?" checked":""}>${esc(o)}</label>`).join("") : `<span class="msg">Geen onderaannemers in de lijst.</span>`;
+}
+
+// draft (only on this device)
+let draftT=null;
+function saveDraft(){ if(editingId) return; clearTimeout(draftT); draftT=setTimeout(()=>{ try{ localStorage.setItem("wd-draft", JSON.stringify(readForm())); }catch(e){} },400); }
+$("#form").addEventListener("input", saveDraft); $("#form").addEventListener("change", saveDraft);
+function loadDraft(){ try{ const d=JSON.parse(localStorage.getItem("wd-draft")||"null"); if(d) return d; }catch(e){} return null; }
+
+// ---------- photos
+function renderPhotos(){
+  const box=$("#photos"); box.querySelectorAll(".ph").forEach(n=>n.remove());
+  const cam=$("#cam");
+  photos.forEach((p,i)=>{
+    const d=document.createElement("div"); d.className="ph"+(p.id?"":" busy");
+    if(p.url){ const im=document.createElement("img"); im.src=p.url; im.alt="Werffoto "+(i+1); d.append(im); }
+    if(p.id){ const b=document.createElement("button"); b.type="button"; b.textContent="×"; b.setAttribute("aria-label","Foto weghalen"); b.onclick=()=>{ photos.splice(i,1); renderPhotos(); saveDraft(); }; d.append(b); }
+    box.insertBefore(d, cam);
+  });
+  cam.hidden = !assets;
+}
+async function shrink(file){
+  try{
+    const bmp=await createImageBitmap(file); const max=1600; const s=Math.min(1,max/Math.max(bmp.width,bmp.height));
+    const c=document.createElement("canvas"); c.width=Math.round(bmp.width*s); c.height=Math.round(bmp.height*s);
+    c.getContext("2d").drawImage(bmp,0,0,c.width,c.height);
+    return await new Promise(r=>c.toBlob(b=>r(b||file),"image/jpeg",0.82));
+  }catch(e){ return file; }
+}
+$("#f-foto").addEventListener("change", async e=>{
+  const files=[...e.target.files]; e.target.value=""; const msg=$("#photo-msg"); msg.hidden=true;
+  for(const f of files){
+    const slot={id:null,url:null}; photos.push(slot); renderPhotos();
+    try{
+      const blob=await shrink(f);
+      slot.url=URL.createObjectURL(blob); renderPhotos();
+      const type = ["image/jpeg","image/png","image/webp"].includes(blob.type) ? blob.type : "image/jpeg";
+      const res=await assets.upload(blob,{type});
+      slot.id=res.id; slot.url=res.url;
+    }catch(err){
+      photos.splice(photos.indexOf(slot),1);
+      msg.hidden=false; msg.className="msg err";
+      msg.textContent = err?.code==="too_large" ? "Deze foto is te groot (max. 20 MB)." :
+        err?.code==="unsupported_type" ? "Dit fotoformaat wordt niet ondersteund. Gebruik JPG of PNG." :
+        err?.code==="rate_limited" ? "Even te veel foto's tegelijk. Probeer het zo opnieuw." :
+        "Foto uploaden lukte niet. Controleer de verbinding en probeer opnieuw.";
+    }
+    renderPhotos(); saveDraft();
+  }
+});
+
+// ---------- save
+$("#form").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const m=$("#save-msg"); m.className="msg";
+  if(!db){ m.className="msg err"; m.textContent="Opslaan kan niet: de gedeelde opslag is niet beschikbaar."; return; }
+  if(photos.some(p=>!p.id)){ m.textContent="Wacht tot de foto's geüpload zijn."; return; }
+  const d=readForm();
+  if(!d.datum || !d.referentie){ m.className="msg err"; m.textContent="Vul de datum en het BC-nummer in."; (!d.datum?$("#f-datum"):$("#f-ref")).focus(); return; }
+  if(!d.posten.length && !d.opmerkingen){ m.className="msg err"; m.textContent="Voeg minstens één uitgevoerde post of een opmerking toe."; return; }
+  if(d.posten.some(p=>!p.activiteit)){ m.className="msg err"; m.textContent="Kies bij elke uitgevoerde post een activiteit."; const bad=[...document.querySelectorAll("#rows-post .a")].find(s=>!s.value); bad?.focus(); return; }
+  const noUitv=[...document.querySelectorAll("#rows-post .row")].find(r=>r.dataset.pk && !uitv(r).uitvoerder);
+  if(noUitv){ m.className="msg err"; m.textContent=`Duid bij ${noUitv.querySelector(".a").value} aan wie het werk uitvoerde.`; noUitv.querySelector(".p-uitvoerder")?.focus(); return; }
+  const badA=[...document.querySelectorAll("#rows-afv .row")].find(x=>{ const s=x.querySelector(".s").value, q=num(x.querySelector(".q").value); return (s&&q==null)||(!s&&q!=null); });
+  if(badA){ m.className="msg err"; m.textContent = badA.querySelector(".s").value ? "Vul bij elke afvoer de hoeveelheid in." : "Kies bij elke afvoer asfalt, beton of grond."; (badA.querySelector(".s").value?badA.querySelector(".q"):badA.querySelector(".s")).focus(); return; }
+  const badM=[...document.querySelectorAll("#rows-mat .row")].find(x=>isBoord(x.querySelector(".p").value) && !x.querySelector(".m").value.trim());
+  if(badM){ m.className="msg err"; m.textContent="Vul bij de boordstenen de afmeting in."; badM.querySelector(".m").focus(); return; }
+  const badL=[...document.querySelectorAll("#rows-post .leid-row")].find(x=>{ const t=x.querySelector(".l-type").value, q=num(x.querySelector(".l-q").value); return (t&&q==null)||(!t&&q!=null); });
+  if(badL){ m.className="msg err"; m.textContent = badL.querySelector(".l-type").value ? "Vul bij elke aangelegde leiding het aantal in." : "Kies bij elke aangelegde leiding het type."; (badL.querySelector(".l-type").value?badL.querySelector(".l-q"):badL.querySelector(".l-type")).focus(); return; }
+  const miss=[...document.querySelectorAll("#rows-post .row")].find(r=>{ const k=r.dataset.pk; return k && k!=="gen" && readPost(r).hoeveelheid==null; });
+  if(miss){ const a=miss.querySelector(".a").value, k=miss.dataset.pk; m.className="msg err";
+    m.textContent = k==="bestr" ? `Vul bij ${a} de lengte en de breedte in.` : k==="bak" ? `Vul bij ${a} de hoeveelheid in.` : k==="opkuis" ? `Vul bij ${a} de duur in.` : `Vul bij ${a} de lengte in.`;
+    [...miss.querySelectorAll(".params input.num")].find(i=>!i.value)?.focus(); return; }
+  const btn=$("#save"); btn.disabled=true; m.textContent="Opslaan…";
+  try{
+    if(editingId){ await db.doc("rapporten/"+editingId).update({...d, gewijzigd:Date.now()}); }
+    else { await db.collection("rapporten").add({...d, auteur:myId, auteurNaam:myName, aangemaakt:Date.now()}); }
+    m.className="msg ok"; m.textContent = editingId ? "Rapport bijgewerkt." : "Rapport opgeslagen.";
+    try{ localStorage.removeItem("wd-draft"); }catch(err){}
+    showShare({...d, auteur: editingId ? (reports.find(x=>x.id===editingId)?.auteur||myId) : myId});
+    const keep={datum:d.datum};
+    editingId=null; $("#edit-banner").hidden=true; fillForm(keep);
+  }catch(err){
+    m.className="msg err";
+    m.textContent = err?.code==="invalid_argument" ? "Opslaan lukte niet." :
+      err?.code==="quota_exceeded" ? "Het geheugen van dit toestel voor het werfdagboek is vol. Exporteer de rapporten en verwijder oude rapporten." : "Opslaan lukte niet. Probeer het opnieuw.";
+  }finally{ btn.disabled=false; }
+});
+$("#cancel-edit").onclick=()=>{ editingId=null; $("#edit-banner").hidden=true; fillForm(loadDraft()||{}); };
+
+// ---------- overzicht
+function inPeriod(dstr, per){
+  if(per==="all") return true;
+  const d=asDate(dstr), t=new Date(); t.setHours(12,0,0,0);
+  if(per==="month") return d.getFullYear()===t.getFullYear() && d.getMonth()===t.getMonth();
+  const mon=new Date(t); mon.setDate(t.getDate()-((t.getDay()+6)%7));
+  if(per==="prev"){ const pm=new Date(mon); pm.setDate(mon.getDate()-7); return d>=new Date(pm.getTime()-864e5/2) && d<new Date(mon.getTime()-864e5/2); }
+  return d>=new Date(mon.getTime()-864e5/2);
+}
+function filtered(){
+  const per=$("#flt-per").value, wl=$("#flt-wl").value, q=$("#flt-q").value.trim().toLowerCase();
+  return reports.filter(r=>r.datum && inPeriod(r.datum,per) && (!wl || r.auteur===wl) &&
+    (!q || [r.werf,r.gemeente,r.ploegbaas,r.referentie,r.opmerkingen,...(r.posten||[]).map(p=>p.uitvoerder||"")].join(" ").toLowerCase().includes(q)));
+}
+let profiles={};
+async function names(ids){ if(!user || !ids.length) return {}; try{ profiles=await user.profiles(ids); }catch(e){} return profiles; }
+let myName="";
+const nm = id => (profiles[id]?.name) || (id && id===myId && myName) || "Werfleider";
+
+async function renderList(){
+  const ids=[...new Set(reports.map(r=>r.auteur).filter(Boolean))];
+  await names(ids);
+  const sel=$("#flt-wl"), cur=sel.value;
+  sel.innerHTML=`<option value="">Iedereen</option>`+ids.map(id=>`<option value="${esc(id)}"${id===cur?" selected":""}>${esc(nm(id))}</option>`).join("");
+  const rs=filtered();
+  const uitvoerders=new Set(rs.flatMap(r=>(r.posten||[]).map(p=>p.uitvoerder).filter(Boolean))).size;
+  const acties=rs.filter(r=>r.actie).length;
+  const werven=new Set(rs.map(r=>(r.referentie||r.werf||"").toLowerCase())).size;
+  $("#stats").innerHTML=`<div class="stat"><b>${rs.length}</b><span>Rapporten</span></div><div class="stat"><b>${werven}</b><span>Werven</span></div><div class="stat"><b>${uitvoerders}</b><span>Uitvoerders</span></div><div class="stat${acties?" warn":""}"><b>${acties}</b><span>Actie nodig</span></div>`;
+  const L=$("#list");
+  if(!reports.length){ L.innerHTML=`<div class="empty">Nog geen rapporten. Zodra een werfleider een dagrapport opslaat via <b>Nieuw rapport</b>, verschijnt het hier.</div>`; }
+  else if(!rs.length){ L.innerHTML=`<div class="empty">Geen rapporten in deze selectie.</div>`; }
+  else L.innerHTML=rs.map(r=>{
+    const d=asDate(r.datum);
+    const tot=(r.posten||[]).slice(0,3).map(p=>`${esc(p.activiteit||p.post||"post")} ${p.hoeveelheid!=null?fmt(p.hoeveelheid)+" "+esc(p.eenheid):""}`).join(" · ");
+    return `<button class="card" type="button" data-id="${esc(r.id)}"><div class="d">${d.toLocaleDateString("nl-BE",{weekday:"short"})}<b>${d.toLocaleDateString("nl-BE",{day:"2-digit",month:"2-digit"})}</b></div>
+      <div><div class="t">${r.referentie?"BC "+esc(r.referentie):esc(r.werf||"Zonder BC-nummer")}${r.actie?'<span class="pill warn">Actie</span>':""}${(r.fotos||[]).length?`<span class="pill cam">${r.fotos.length} foto</span>`:""}</div>
+      <div class="s">${esc(nm(r.auteur))}${(()=>{ const u=[...new Set((r.posten||[]).map(uitvLabel).filter(Boolean))]; return u.length?" · "+esc(u.join(", ")):""; })()}</div>
+      ${tot?`<div class="s">${tot}</div>`:""}</div></button>`;
+  }).join("");
+  L.querySelectorAll(".card").forEach(c=>c.onclick=()=>{ openId=c.dataset.id; renderDetail(); window.scrollTo({top:0,behavior:"smooth"}); });
+  // totals
+  const g={};
+  rs.forEach(r=>(r.posten||[]).forEach(p=>{ if(p.hoeveelheid==null) return; const act=p.activiteit||"Zonder activiteit"; const k=act+"|"+(p.post||"").trim().toLowerCase()+"|"+p.eenheid; (g[k] ||= {act,post:p.post||"—",eh:p.eenheid,q:0,m2:0,m3:0}); g[k].q+=p.hoeveelheid; g[k].m2+=p.m2||0; g[k].m3+=p.m3||0; }));
+  const order=actList();
+  const ai=a=>{ const i=order.indexOf(a); return i<0?999:i; };
+  const t=Object.values(g).sort((a,b)=>ai(a.act)-ai(b.act)||a.act.localeCompare(b.act,"nl")||a.post.localeCompare(b.post,"nl"));
+  const trows=[]; let lastAct=null;
+  t.forEach(x=>{
+    if(x.act!==lastAct){ lastAct=x.act; const sums={}; let m2=0,m3=0; t.filter(y=>y.act===x.act).forEach(y=>{ sums[y.eh]=(sums[y.eh]||0)+y.q; m2+=y.m2; m3+=y.m3; });
+      const extra=[m2?fmt(m2)+" m² bestr.":"", m3?fmt(m3)+" m³ uitgr.":""].filter(Boolean).join(" · ");
+      trows.push(`<tr class="grp"><td>${esc(x.act)}${extra?`<span class="sub">${extra}</span>`:""}</td><td class="n">${Object.entries(sums).map(([eh,q])=>fmt(q)+" "+esc(eh)).join(" · ")}</td><td></td></tr>`); }
+    const ex=[x.m2?fmt(x.m2)+" m² bestrating":"", x.m3?fmt(x.m3)+" m³ uitgraving":""].filter(Boolean).join(" · ");
+    trows.push(`<tr><td>${esc(x.post)}${ex?`<span class="sub">${ex}</span>`:""}</td><td class="n">${fmt(x.q)}</td><td>${esc(x.eh)}</td></tr>`);
+  });
+  const u={};
+  rs.forEach(r=>(r.posten||[]).forEach(p=>{ if(p.hoeveelheid==null||!p.uitvoerder) return; const lab=uitvLabel(p), k=lab+"|"+(p.activiteit||"")+"|"+p.eenheid; (u[k] ||= {lab,oa:p.uitvoerderType==="oa",act:p.activiteit||"—",eh:p.eenheid,q:0}); u[k].q+=p.hoeveelheid; }));
+  const ut=Object.values(u).sort((a,b)=>(a.oa-b.oa)||a.lab.localeCompare(b.lab,"nl")||ai(a.act)-ai(b.act));
+  const urows=[]; let lastU=null;
+  ut.forEach(x=>{ if(x.lab!==lastU){ lastU=x.lab; urows.push(`<tr class="grp"><td colspan="3">${esc(x.lab)}</td></tr>`); } urows.push(`<tr><td>${esc(x.act)}</td><td class="n">${fmt(x.q)}</td><td>${esc(x.eh)}</td></tr>`); });
+  const lsum={};
+  rs.forEach(r=>(r.posten||[]).forEach(p=>{ if(Array.isArray(p.leidingen)) p.leidingen.forEach(l=>{ if(!l.type || l.hoeveelheid==null) return; const s=(lsum[l.type] ||= {st:0,m:0}); s.st+=l.hoeveelheid; s.m+=l.hoeveelheid*(p.lengte||0); }); }));
+  const lorder=(lists.leidingen&&lists.leidingen.length)?lists.leidingen:LEID_DEFAULT;
+  const lt=Object.entries(lsum).sort((a,b)=>{ const i=x=>{const j=lorder.indexOf(x);return j<0?999:j;}; return i(a[0])-i(b[0])||a[0].localeCompare(b[0],"nl"); });
+  const m={};
+  rs.forEach(r=>(r.materiaal||[]).forEach(p=>{ if(p.hoeveelheid==null) return; const nm2=matName(p); const k=nm2.toLowerCase()+"|"+p.eenheid; (m[k] ||= {p:nm2,eh:p.eenheid,q:0}); m[k].q+=p.hoeveelheid; }));
+  const mt=Object.values(m).sort((a,b)=>a.p.localeCompare(b.p,"nl"));
+  const af={};
+  rs.forEach(r=>(r.afvoer||[]).forEach(p=>{ if(p.hoeveelheid==null) return; const k=(p.soort||"?")+"|"+p.eenheid; (af[k] ||= {s:p.soort||"?",eh:p.eenheid,q:0}); af[k].q+=p.hoeveelheid; }));
+  const aft=Object.values(af).sort((a,b)=>["Asfalt","Beton","Grond"].indexOf(a.s)-["Asfalt","Beton","Grond"].indexOf(b.s));
+  const ritten=rs.reduce((a,r)=>a+(r.transport||[]).reduce((b,x)=>b+(x.ritten||0),0),0);
+  $("#totals").innerHTML = (t.length ? `<div class="tbl"><table><thead><tr><th>Activiteit / omschrijving</th><th class="n">Totaal</th><th>Eh</th></tr></thead><tbody>${trows.join("")}</tbody></table></div>` : `<div class="empty">Geen hoeveelheden in deze selectie.</div>`)
+    + (lt.length ? `<h2 style="margin-top:18px">Aangelegde leidingen</h2><div class="tbl"><table><thead><tr><th>Leiding</th><th class="n">Aantal</th><th class="n">Gelegd</th></tr></thead><tbody>${lt.map(([k,s])=>`<tr><td>${esc(k)}</td><td class="n">${fmt(s.st)} st</td><td class="n">${fmt(s.m)} m</td></tr>`).join("")}</tbody></table></div>` : "")
+    + (ut.length ? `<h2 style="margin-top:18px">Per uitvoerder</h2><div class="tbl"><table><thead><tr><th>Uitvoerder / activiteit</th><th class="n">Totaal</th><th>Eh</th></tr></thead><tbody>${urows.join("")}</tbody></table></div>` : "")
+    + (aft.length ? `<h2 style="margin-top:18px">Af te voeren</h2><div class="tbl"><table><thead><tr><th>Soort</th><th class="n">Totaal</th><th>Eh</th></tr></thead><tbody>${aft.map(x=>`<tr><td>${esc(x.s)}</td><td class="n">${fmt(x.q)}</td><td>${esc(x.eh)}</td></tr>`).join("")}</tbody></table></div>` : "")
+    + (mt.length ? `<h2 style="margin-top:18px">Aan te leveren materiaal</h2><div class="tbl"><table><thead><tr><th>Materiaal</th><th class="n">Totaal</th><th>Eh</th></tr></thead><tbody>${mt.map(x=>`<tr><td>${esc(x.p)}</td><td class="n">${fmt(x.q)}</td><td>${esc(x.eh)}</td></tr>`).join("")}</tbody></table></div>` : "")
+    + (ritten ? `<p class="msg">${fmt(ritten)} transportritten in deze selectie.</p>` : "");
+  $("#export").hidden = !downloads || !rs.length;
+  renderDetail();
+}
+function renderDetail(){
+  const box=$("#detail"); const r=reports.find(x=>x.id===openId);
+  if(!r){ box.innerHTML=""; return; }
+  const mine = r.auteur && r.auteur===myId;
+  const canChange = mine || iCanEdit;
+  const tbl=(head,rows)=>rows.length?`<div class="tbl"><table><thead><tr>${head}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`:"";
+  box.innerHTML=`<div class="detail">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:start;flex-wrap:wrap">
+      <div style="min-width:0"><h3>${r.referentie?"BC "+esc(r.referentie):esc(r.werf||"Zonder BC-nummer")}${r.actie?'<span class="pill warn">Actie nodig</span>':""}</h3>
+      <div class="meta">${asDate(r.datum).toLocaleDateString("nl-BE",{weekday:"long",day:"numeric",month:"long",year:"numeric"})} · ${esc(nm(r.auteur))}</div></div>
+      <button class="btn small" type="button" id="d-close">Sluiten</button>
+    </div>
+    ${(r.posten||[]).length?`<h4>Uitgevoerd</h4>`+tbl(`<th>Activiteit</th><th>Uitvoerder</th><th>Details</th><th class="n">Hoev.</th><th>Eh</th>`, r.posten.map(p=>`<tr><td>${esc(p.activiteit||"—")}</td><td>${esc(uitvLabel(p)||"—")}</td><td>${esc(paramText(p))}</td><td class="n">${p.hoeveelheid!=null?fmt(p.hoeveelheid):"—"}</td><td>${esc(p.eenheid)}</td></tr>`)):""}
+    ${(r.afvoer||[]).length?`<h4>Af te voeren</h4>`+tbl(`<th>Soort</th><th class="n">Hoev.</th><th>Eh</th>`, r.afvoer.map(p=>`<tr><td>${esc(p.soort)}</td><td class="n">${p.hoeveelheid!=null?fmt(p.hoeveelheid):"—"}</td><td>${esc(p.eenheid)}</td></tr>`)):""}
+    ${(r.materiaal||[]).length?`<h4>Aan te leveren materiaal</h4>`+tbl(`<th>Materiaal</th><th class="n">Hoev.</th><th>Eh</th>`, r.materiaal.map(p=>`<tr><td>${esc(matName(p))}</td><td class="n">${p.hoeveelheid!=null?fmt(p.hoeveelheid):"—"}</td><td>${esc(p.eenheid)}</td></tr>`)):""}
+    ${(r.transport||[]).length?`<h4>Transport</h4>`+tbl(`<th>Firma</th><th>Soort</th><th class="n">Ritten</th>`, r.transport.map(p=>`<tr><td>${esc(p.firma)}</td><td>${esc(p.soort)}</td><td class="n">${p.ritten??"—"}</td></tr>`)):""}
+    ${r.opmerkingen?`<h4>Opmerkingen</h4><p>${esc(r.opmerkingen)}</p>`:""}
+    ${(r.fotos||[]).length?`<h4>Foto's</h4><div class="photos">${r.fotos.map((id,i)=>`<a class="ph" href="${esc(window.__blobUrl(id))}" target="_blank" rel="noopener"><img src="${esc(window.__blobUrl(id))}" alt="Werffoto ${i+1}" loading="lazy"></a>`).join("")}</div>`:""}
+    <div class="share-btns" style="margin-top:14px"><a class="btn small wa" href="${esc(waLink(r))}" target="_blank" rel="noopener">Verstuur via WhatsApp</a>${canShareFiles(r)?'<button class="btn small" type="button" id="d-share">Delen met foto\'s</button>':""}</div><p class="msg" id="d-share-msg" hidden></p>
+    ${canChange?`<div class="confirm" style="margin-top:10px" id="d-act"><button class="btn small" type="button" id="d-edit">Bewerken</button><button class="btn small danger" type="button" id="d-del">Verwijderen</button></div>`:""}
+  </div>`;
+  $("#d-close").onclick=()=>{ openId=null; renderDetail(); };
+  if($("#d-share")) $("#d-share").onclick=()=>shareWithPhotos(r,$("#d-share-msg"));
+  if(canChange){
+    $("#d-edit").onclick=()=>{ editingId=r.id; fillForm(r); $("#edit-banner").hidden=false; show("new"); window.scrollTo({top:0}); };
+    $("#d-del").onclick=()=>{
+      $("#d-act").innerHTML=`<span>Dit rapport definitief verwijderen?</span><button class="btn small danger" type="button" id="d-yes">Ja, verwijderen</button><button class="btn small" type="button" id="d-no">Nee</button>`;
+      $("#d-no").onclick=renderDetail;
+      $("#d-yes").onclick=async()=>{ try{ await db.doc("rapporten/"+r.id).delete(); openId=null; }catch(e){ $("#d-act").innerHTML=`<span class="msg err">Verwijderen lukte niet.</span>`; } };
+    };
+  }
+}
+// ---------- WhatsApp
+function waDetail(p){
+  const k=kindOf(p.activiteit), f=v=>v!=null&&v!==""?fmt(v):null, b=[];
+  if(k==="graaf"){
+    if(p.type) b.push(p.type);
+    if(f(p.breedteSleuf)||f(p.diepte)) b.push(`sleuf ${f(p.breedteSleuf)??"?"} × ${f(p.diepte)??"?"} m`);
+    if(f(p.breedteBestr)) b.push(`bestr. ${f(p.breedteBestr)} m breed`);
+    if(f(p.dikteFund)) b.push(`fund. ${f(p.dikteFund)} cm`);
+    if(f(p.dikteZand)) b.push(`zandverv. ${f(p.dikteZand)} cm`);
+    const calc=[p.m2!=null?fmt(p.m2)+" m² bestrating":"", p.m3!=null?fmt(p.m3)+" m³ uitgraving":""].filter(Boolean).join(" · ");
+    const out=[]; if(b.length) out.push(b.join(", ")); if(calc) out.push("→ "+calc);
+    const lt=leidText(p.leidingen); if(lt) out.push("Leidingen: "+lt);
+    return out;
+  }
+  if(k==="bestr"){ const x=[p.type, (f(p.lengte)||f(p.breedteBestr))?`${f(p.lengte)??"?"} × ${f(p.breedteBestr)??"?"} m`:""].filter(Boolean).join(", "); return x?[x]:[]; }
+  if(k==="kabel") return p.type?[p.type]:[];
+  if(k==="bak") return [[p.opdrachtgever,p.type].filter(Boolean).join(" – ")].filter(Boolean);
+  if(k==="opkuis") return p.omschrijving?[p.omschrijving]:[];
+  return p.post?[p.post]:[];
+}
+function waText(r){
+  const d=asDate(r.datum), L=[];
+  L.push(`*Dagrapport BC ${r.referentie||"?"}*`);
+  L.push(`${d.toLocaleDateString("nl-BE",{weekday:"long",day:"numeric",month:"long"})} · week ${isoWeek(d)} · ${nm(r.auteur)}`);
+  if(r.actie) L.push("","⚠ *ACTIE NODIG VAN PROJECTLEIDING*");
+  const groups=new Map();
+  (r.posten||[]).forEach(p=>{ const k=uitvLabel(p)||"Uitvoerder niet ingevuld"; if(!groups.has(k)) groups.set(k,{oa:p.uitvoerderType==="oa",posten:[]}); groups.get(k).posten.push(p); });
+  [...groups.entries()].sort((a,b)=>(a[1].oa-b[1].oa)||a[0].localeCompare(b[0],"nl")).forEach(([lab,g])=>{
+    L.push("",`👷 *${lab}*`);
+    g.posten.forEach(p=>{
+      const q=p.hoeveelheid!=null?fmt(p.hoeveelheid)+" "+p.eenheid:"";
+      L.push(`• ${p.activiteit||"Post"}${q?": *"+q+"*":""}`);
+      waDetail(p).forEach(x=>L.push(`   ${x}`));
+    });
+  });
+  if((r.materiaal||[]).length){ L.push("","📦 *Aan te leveren*"); r.materiaal.forEach(p=>L.push(`• ${matName(p)}${p.hoeveelheid!=null?": "+fmt(p.hoeveelheid)+" "+p.eenheid:""}`)); }
+  if((r.afvoer||[]).length){ L.push("","🚛 *Af te voeren*"); r.afvoer.forEach(p=>L.push(`• ${p.soort||"?"}${p.hoeveelheid!=null?": "+fmt(p.hoeveelheid)+" "+p.eenheid:""}`)); }
+  if(r.opmerkingen) L.push("","📝 *Opmerkingen*", r.opmerkingen);
+  if((r.fotos||[]).length) L.push("", `📷 ${r.fotos.length} foto${r.fotos.length>1?"'s":""}`);
+  return L.join("\n");
+}
+const waLink = r => "https://wa.me/?text="+encodeURIComponent(waText(r));
+let shareRep=null;
+function photoFiles(r){ return (r.fotos||[]).map((id,i)=>window.__blobs[id]?new File([window.__blobs[id]],`BC${r.referentie||""}_${r.datum}_${i+1}.jpg`,{type:window.__blobs[id].type||"image/jpeg"}):null).filter(Boolean); }
+function canShareFiles(r){ try{ const f=photoFiles(r); return f.length && navigator.canShare && navigator.canShare({files:f}); }catch(e){ return false; } }
+async function shareWithPhotos(r, msgEl){
+  try{ await navigator.share({text:waText(r), files:photoFiles(r)}); }
+  catch(e){ if(e&&e.name==="AbortError") return; if(msgEl){ msgEl.hidden=false; msgEl.className="msg err"; msgEl.textContent="Delen met foto's lukte niet op dit toestel. Gebruik de WhatsApp-knop en stuur de foto's apart."; } }
+}
+$("#wa-share").onclick=()=>shareRep&&shareWithPhotos(shareRep,$("#wa-msg"));
+function showShare(r){
+  shareRep=r; $("#wa-share").hidden=!canShareFiles(r);
+  const t=waText(r);
+  $("#wa-prev").textContent=t; $("#wa-link").href=waLink(r); $("#wa-msg").hidden=true;
+  $("#share").hidden=false; window.scrollTo({top:0,behavior:"smooth"});
+}
+$("#share-close").onclick=()=>{ $("#share").hidden=true; };
+$("#wa-copy").onclick=async()=>{
+  const t=$("#wa-prev").textContent, msg=$("#wa-msg"); msg.hidden=false;
+  try{ await navigator.clipboard.writeText(t); msg.className="msg ok"; msg.textContent="Tekst gekopieerd. Plak hem in de WhatsApp-groep."; }
+  catch(e){ const rg=document.createRange(); rg.selectNodeContents($("#wa-prev")); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(rg); msg.className="msg"; msg.textContent="Tekst is geselecteerd. Kopieer hem met je toestel."; }
+};
+["#flt-per","#flt-wl"].forEach(s=>$(s).addEventListener("change",renderList));
+$("#flt-q").addEventListener("input",renderList);
+try{ const p=localStorage.getItem("wd-per"); if(p) $("#flt-per").value=p; }catch(e){}
+$("#flt-per").addEventListener("change",()=>{ try{ localStorage.setItem("wd-per",$("#flt-per").value); }catch(e){} });
+
+// CSV for Excel (semicolon, decimal comma)
+$("#export").onclick=async()=>{
+  const m=$("#export-msg"); m.className="msg"; m.textContent="";
+  const cell=v=>{ const s=String(v??""); return /[;"\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; };
+  const n=v=>v==null?"":String(v).replace(".",",");
+  const lines=[["Datum","Week","BC-nummer","Werfleider","Soort","Activiteit / omschrijving","Hoeveelheid","Eenheid","Uitvoerder","Eigen ploeg / OA","Type","Opdrachtgever","Lengte (m)","Breedte bestrating (m)","Breedte sleuf (m)","Diepte sleuf (m)","Dikte fundering (cm)","Dikte zandvervanging (cm)","Aangelegde leidingen","Oppervlakte bestrating (m²)","Volume uitgraving (m³)","Actie","Opmerkingen"].join(";")];
+  const E=Array(13).fill("");
+  const pp=p=>[p.uitvoerder||"", p.uitvoerderType==="oa"?"Onderaannemer":p.uitvoerderType==="eigen"?"Eigen ploeg":"", p.type,p.opdrachtgever,n(p.lengte),n(p.breedteBestr),n(p.breedteSleuf),n(p.diepte),n(p.dikteFund),n(p.dikteZand),leidText(p.leidingen),n(p.m2),n(p.m3)];
+  filtered().slice().sort((a,b)=>a.datum.localeCompare(b.datum)).forEach(r=>{
+    const base=[r.datum,isoWeek(asDate(r.datum)),r.referentie,nm(r.auteur)];
+    const tail=[r.actie?"ja":"",r.opmerkingen];
+    let any=false;
+    (r.posten||[]).forEach(p=>{ any=true; lines.push([...base,p.activiteit||"Post",p.post,n(p.hoeveelheid),p.eenheid,...pp(p),...tail].map(cell).join(";")); });
+    (r.afvoer||[]).forEach(p=>{ any=true; lines.push([...base,"Af te voeren",p.soort,n(p.hoeveelheid),p.eenheid,...E,...tail].map(cell).join(";")); });
+    (r.materiaal||[]).forEach(p=>{ any=true; lines.push([...base,"Aan te leveren materiaal",matName(p),n(p.hoeveelheid),p.eenheid,...E,...tail].map(cell).join(";")); });
+    (r.transport||[]).forEach(p=>{ any=true; lines.push([...base,"Transport",[p.soort,p.firma].filter(Boolean).join(" "),n(p.ritten),"rit",...E,...tail].map(cell).join(";")); });
+    if(!any) lines.push([...base,"Opmerking","","","",...E,...tail].map(cell).join(";"));
+  });
+  try{ await downloads.save({filename:`werfdagboek_${iso(new Date())}.csv`, data:"﻿"+lines.join("\r\n")}); m.className="msg ok"; m.textContent="Export klaar."; }
+  catch(e){ if(e?.code!=="declined"){ m.className="msg err"; m.textContent="Exporteren lukte niet in deze weergave."; } }
+};
+
+// ---------- uitwisselen tussen toestellen (zonder foto's)
+$("#bk-out").onclick=async()=>{
+  const m=$("#bk-msg"); const data={type:"werfdagboek-sibelga",versie:1,gemaakt:new Date().toISOString(),van:myName,rapporten:window.__offline.reps()};
+  try{ await downloads.save({filename:`werfdagboek_${(myName||"toestel").replace(/\s+/g,"_")}_${iso(new Date())}.json`, data:JSON.stringify(data)}); m.className="msg ok"; m.textContent="Bestand gemaakt. Stuur het door naar wie de rapporten verzamelt."; }
+  catch(e){ m.className="msg err"; m.textContent="Exporteren lukte niet op dit toestel."; }
+};
+$("#bk-in").onchange=async e=>{
+  const f=e.target.files[0]; e.target.value=""; const m=$("#bk-msg"); if(!f) return;
+  try{ const d=JSON.parse(await f.text()); if(d.type!=="werfdagboek-sibelga") throw 0; const n=window.__offline.importReps(d.rapporten); m.className="msg ok"; m.textContent=n?`${n} rapport${n>1?"en":""} ingelezen${d.van?" van "+d.van:""}.`:"Geen nieuwe rapporten in dit bestand."; }
+  catch(err){ m.className="msg err"; m.textContent="Dit bestand is geen export van het Werfdagboek."; }
+};
+function renderWho(){
+  const w=$("#who"); w.innerHTML="";
+  if(myName){ const sp=document.createElement("span"); sp.textContent=myName; w.append(sp); }
+  else { const b=document.createElement("button"); b.className="btn small"; b.type="button"; b.textContent="Naam instellen"; b.onclick=()=>{ show("cfg"); $("#c-naam").focus(); }; w.append(b); }
+}
+// ---------- lijsten
+function applyLists(){
+  const set=(id,arr)=>$(id).innerHTML=(arr||[]).map(v=>`<option value="${esc(v)}">`).join("");
+  const usedWerven=[...new Set(reports.map(r=>r.referentie).filter(Boolean))];
+  const usedPosten=[...new Set(reports.flatMap(r=>(r.posten||[]).map(p=>p.post)).filter(Boolean))];
+  set("#dl-werven",[...new Set([...(lists.werven||[]),...usedWerven])]);
+  set("#dl-posten",[...new Set([...(lists.posten||[]),...usedPosten])]);
+  set("#dl-ploegbazen",lists.ploegbazen); set("#dl-lev",lists.leveranciers); set("#dl-prod",lists.producten); set("#dl-maat",lists.maatBoordstenen); set("#dl-trans",lists.transporteurs);
+  set("#dl-tb",lists.typesBestrating); set("#dl-tk",lists.typesKabel); set("#dl-tbak",lists.typesBak); set("#dl-og",lists.opdrachtgevers); set("#dl-leid",lists.leidingen);
+  renderOA();
+  document.querySelectorAll("#rows-post .p-uitvoerder").forEach(s=>{ s.innerHTML=uitvoerderOpts(s.value); });
+  document.querySelectorAll("#rows-mat .row").forEach(r=>{ const s=r.querySelector(".ps"), v=r.querySelector(".p").value; if(s) s.innerHTML=matOpts(v); });
+  document.querySelectorAll("#rows-post .sel-tb").forEach(s=>{ s.innerHTML=tbOpts(s.value); });
+  document.querySelectorAll("#rows-post .l-type").forEach(s=>{ s.innerHTML=leidOpts(s.value); });
+  document.querySelectorAll("#rows-post .a").forEach(s=>{ const v=s.value; s.innerHTML=`<option value="">Activiteit…</option>`+opts([...new Set([...actList(), ...(v?[v]:[])])], v); });
+  LIST_KEYS.forEach(k=>{ const t=$("#c-"+k); if(t && t!==document.activeElement) t.value=(lists[k]||[]).join("\n"); });
+}
+$("#cfg-save").onclick=async()=>{
+  const m=$("#cfg-msg"); const data={};
+  LIST_KEYS.forEach(k=>data[k]=[...new Set($("#c-"+k).value.split("\n").map(s=>s.trim()).filter(Boolean))]);
+  const nv=$("#c-naam").value.trim(); window.__offline.setName(nv); myName=nv; renderWho();
+  try{ await db.doc("config/lijsten").set(data); m.className="msg ok"; m.textContent="Instellingen opgeslagen."; }
+  catch(e){ m.className="msg err"; m.textContent="Opslaan lukte niet."; }
+};
+
+// ---------- boot
+fillForm(loadDraft()||{});
+try{ const t=localStorage.getItem("wd-tab"); if(t==="list") show("list"); }catch(e){}
+renderList();
+
+(async()=>{
+  const c=window.claude; if(!c?.use) return;
+  [db,user,assets,downloads]=await Promise.all(["db","user","assets","downloads"].map(n=>c.use(n).catch(()=>null)));
+
+  if(user){
+    const me=await user.me(); myId=me.id; iCanEdit=me.canEdit; myName=me.name||"";
+    $("#tab-cfg").hidden=false; $("#c-naam").value=myName; renderWho();
+    if(!myName){ show("cfg"); $("#c-naam").focus(); }
+  }
+  renderPhotos();
+  if(!db) return;
+  db.doc("config/lijsten").onSnapshot(s=>{ lists=s.exists?s.data():{}; applyLists(); }, ()=>{});
+  db.collection("rapporten").orderBy("datum","desc").limit(1000).onSnapshot(s=>{
+    reports=s.docs.map(d=>({id:d.id,...d.data()}));
+    window.__loadBlobs(reports.flatMap(r=>r.fotos||[])).then(()=>{ applyLists(); renderList(); });
+  }, e=>{ $("#list").innerHTML=`<div class="empty">De rapporten konden niet geladen worden. Herlaad de pagina.</div>`; });
+})();
+})();
+</script>
+
+<script>
+if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
+(function(){ const ios=/iphone|ipad|ipod/i.test(navigator.userAgent), standalone=navigator.standalone||matchMedia("(display-mode: standalone)").matches;
+  let seen=false; try{ seen=localStorage.getItem("wd-install-ok")==="1"; }catch(e){}
+  const h=document.getElementById("install-hint"); if(ios && !standalone && !seen) h.hidden=false;
+  document.getElementById("install-close").onclick=()=>{ h.hidden=true; try{ localStorage.setItem("wd-install-ok","1"); }catch(e){} };
+})();
+</script>
+</body>
+</html>
