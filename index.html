@@ -75,6 +75,9 @@ textarea{min-height:96px;resize:vertical}
 .row.mat,.row.afv{grid-template-columns:minmax(0,1fr) 84px 76px 36px}
 .row.mat .ps{grid-row:1;grid-column:1}.row.mat .q{grid-row:1;grid-column:2}.row.mat .u{grid-row:1;grid-column:3}.row.mat .x{grid-row:1;grid-column:4}
 .row.mat .p{grid-row:2;grid-column:1/4}.row.mat .m{grid-row:3;grid-column:1/4}
+.combo{display:flex;flex-direction:column;gap:6px;min-width:0}
+.row.mat .combo{grid-row:3;grid-column:1/4}
+
 .row.trans{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 70px 36px}
 @media (max-width:560px){
   .params{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
@@ -82,6 +85,7 @@ textarea{min-height:96px;resize:vertical}
   .row.mat{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 36px;gap:6px}
   .row.mat .ps{grid-column:1/3}.row.mat .x{grid-column:3}.row.mat .q{grid-row:2;grid-column:1}.row.mat .u{grid-row:2;grid-column:2}
   .row.mat .p{grid-row:3;grid-column:1/3}.row.mat .m{grid-row:4;grid-column:1/3}
+  .row.mat .combo{grid-row:4;grid-column:1/3}
   nav.tabs button{font-size:.9rem;padding:10px 4px;letter-spacing:.02em}
   .row.trans{grid-template-columns:minmax(0,1fr) 70px 36px;grid-template-areas:"f f x" "t r r"}
   .row.trans .f{grid-area:f}.row.trans .t{grid-area:t}.row.trans .r{grid-area:r}.row.trans .x{grid-area:x}
@@ -204,7 +208,7 @@ tr:last-child td{border-bottom:0}
         <legend><span class="n">1</span>Werf</legend>
         <div class="grid keep2">
           <label>Datum<input type="date" id="f-datum" required></label>
-          <label>BC-nummer<input id="f-ref" list="dl-werven" inputmode="text" placeholder="BC-nummer" autocomplete="off" required></label>
+          <label>BC-nummer<input id="f-ref" list="dl-werven" inputmode="text" placeholder="BC-nummer" data-other="Nieuw BC-nummer…" autocomplete="off" required></label>
         </div>
       </fieldset>
 
@@ -302,10 +306,11 @@ tr:last-child td{border-bottom:0}
 /* Offline opslag: rapporten en lijsten in localStorage, foto's in IndexedDB van dit toestel */
 (function(){
 const LS_R="wd-off-rapporten", LS_L="wd-off-lijsten", LS_N="wd-off-naam", LS_ID="wd-off-id";
-const DEFAULT_LISTS={"activiteiten": ["Graafwerk", "Herbestrating", "Plaatsen van bakken", "Leggen van leidingen", "Trekken van kabels", "Opkuisen van de werf", "Verhuizen naar andere werf"], "leidingen": ["LS", "HS", "EP", "FOP", "DB7", "DB6", "SRV 7x12+2x10", "HDPE-50mm", "Waterleiding", "Gasleiding"], "onderaannemers": ["BKM Pavetech", "Cevik-Construct"], "opdrachtgevers": ["Sibelga"], "ploegbazen": ["Eric Hannes", "Remzi Taslidere", "Celal Altincanak", "Cüneyt Teker"], "posten": [], "producten": ["Stabilisé", "Beton", "Zand", "Wit zand", "Dolomiet", "Zwarte grond", "Dallen", "Klinkers", "Boordstenen", "Flowjoint", "Noppenfolie"], "typesBak": [], "typesBestrating": ["Dallen", "Klinkers", "Platines", "Kasseien", "Blauwe steen", "Mozaïek", "Beton", "Asfalt", "Volle grond", "Dolomiet"], "typesKabel": [], "werven": [], "maatBoordstenen": []};
+const DEFAULT_LISTS={"activiteiten": ["Graafwerk", "Herbestrating", "Plaatsen van bakken", "Leggen van leidingen", "Trekken van kabels", "Opkuisen van de werf", "Verhuizen naar andere werf"], "leidingen": ["LS", "HS", "EP", "FOP", "DB7", "DB6", "SRV 7x12+2x10", "HDPE-50mm", "Waterleiding", "Gasleiding"], "onderaannemers": ["BKM Pavetech", "Cevik-Construct"], "opdrachtgevers": ["Sibelga"], "ploegbazen": ["Eric Hannes", "Remzi Taslidere", "Celal Altincanak", "Cüneyt Teker"], "posten": [], "producten": ["Stabilisé", "Beton", "Zand", "Wit zand", "Dolomiet", "Zwarte grond", "Dallen", "Klinkers", "Boordstenen", "Flowjoint", "Noppenfolie"], "typesBak": [], "typesBestrating": ["Dallen", "Klinkers", "Platines", "Kasseien", "Blauwe steen", "Mozaïek", "Beton", "Asfalt", "Volle grond", "Dolomiet", "Boordstenen"], "typesKabel": [], "werven": [], "maatBoordstenen": []};
 const rd=(k,d)=>{ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } };
 const wr=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){ throw {code:"quota_exceeded"}; } };
 let reps=rd(LS_R,{}), lijsten=rd(LS_L,null)||DEFAULT_LISTS;
+try{ if(localStorage.getItem("wd-off-mig")!=="2"){ lijsten.typesBestrating=lijsten.typesBestrating||[]; if(!lijsten.typesBestrating.includes("Boordstenen")) lijsten.typesBestrating.push("Boordstenen"); localStorage.setItem(LS_L,JSON.stringify(lijsten)); localStorage.setItem("wd-off-mig","2"); } }catch(e){}
 let devId=null; try{ devId=localStorage.getItem(LS_ID); if(!devId){ devId="t"+Date.now().toString(36)+Math.random().toString(36).slice(2,7); localStorage.setItem(LS_ID,devId); } }catch(e){ devId="t-tijdelijk"; }
 const listeners=[]; const fire=()=>listeners.forEach(f=>f());
 const snap=(id,data)=>({id,exists:data!=null,data:()=>data,metadata:{fromCache:false,hasPendingWrites:false}});
@@ -358,6 +363,7 @@ const kindOf = a => !a ? "" : /graaf/i.test(a) ? "graaf" : /bestrat/i.test(a) ? 
 const SPEC = {
   graaf:[["type","Type bestrating","dl-tb",""],["lengte","Lengte sleuf","","m"],["breedteBestr","Breedte bestrating","","m"],["breedteSleuf","Breedte sleuf","","m"],["dikteFund","Dikte fundering","","cm"],["diepte","Diepte sleuf","","m"],["dikteZand","Dikte zandvervanging","","cm"]],
   bestr:[["type","Type bestrating","dl-tb",""],["lengte","Lengte","","m"],["breedteBestr","Breedte bestrating","","m"]],
+  bestrBoord:[["type","Type bestrating","dl-tb",""],["aantal","Aantal","","st"],["maat","Afmeting","dl-maat",""]],
   kabel:[["type","Type kabel","dl-tk",""],["lengte","Lengte","","m"]],
   bak:[["opdrachtgever","Opdrachtgever","dl-og",""],["type","Type bak","dl-tbak",""],["aantal","Hoeveelheid","","st"]],
   opkuis:[["omschrijving","Wat werd opgekuist","","",1],["duur","Duur","","u"]]
@@ -369,7 +375,7 @@ function computePost(kind, v){
   const L=v.lengte, Bb=v.breedteBestr, Bs=v.breedteSleuf, D=v.diepte;
   if(L!=null && Bb!=null) m2=L*Bb;
   if(kind==="graaf"){ q=L; eh="m"; if(L!=null && Bs!=null && D!=null) m3=L*Bs*D; }
-  if(kind==="bestr"){ q=m2; eh="m²"; m2=null; }
+  if(kind==="bestr"){ if(isBoord(v.type)){ q=v.aantal; eh="st"; m2=null; desc=[v.type,v.maat].filter(Boolean).join(" "); } else { q=m2; eh="m²"; m2=null; } }
   if(kind==="kabel"){ q=L; eh="m"; m2=null; }
   if(kind==="bak"){ q=v.aantal; eh="st"; m2=null; desc=[v.opdrachtgever,v.type].filter(Boolean).join(" – "); }
   if(kind==="opkuis"){ q=v.duur; eh="u"; m2=null; desc=v.omschrijving||""; }
@@ -388,7 +394,8 @@ function paramText(p){
     const lt=leidText(p.leidingen); if(lt) bits.push("leidingen: "+lt);
     if(p.m2!=null) bits.push("= "+fmt(p.m2)+" m² bestrating");
     if(p.m3!=null) bits.push(fmt(p.m3)+" m³ uitgraving");
-  } else if(k==="bestr"){ if(p.type) bits.push(p.type); if(f(p.lengte)||f(p.breedteBestr)) bits.push((f(p.lengte)??"?")+" × "+(f(p.breedteBestr)??"?")+" m"); }
+  } else if(k==="bestr" && isBoord(p.type)){ bits.push([p.type,p.maat].filter(Boolean).join(" ")); }
+  else if(k==="bestr"){ if(p.type) bits.push(p.type); if(f(p.lengte)||f(p.breedteBestr)) bits.push((f(p.lengte)??"?")+" × "+(f(p.breedteBestr)??"?")+" m"); }
   else if(k==="kabel"){ if(p.type) bits.push(p.type); }
   else if(k==="bak"){ if(p.opdrachtgever) bits.push(p.opdrachtgever); if(p.type) bits.push(p.type); }
   else if(k==="opkuis"){ if(p.omschrijving) bits.push(p.omschrijving); }
@@ -427,7 +434,7 @@ function addRow(kind, d={}){
     <select class="u" aria-label="Eenheid">${opts(EH_MAT, d.eenheid||matUnit(d.product)||"m³")}</select>
     <input class="m" list="dl-maat" placeholder="Afmeting, bv. 100×30×15 cm" value="${esc(d.maat)}" aria-label="Afmeting boordsteen"${isBoord(d.product)?"":" hidden"}>`;
   if(kind==="mat"){ r.querySelector(".ps").addEventListener("change",e=>{ const v=e.target.value, pi=r.querySelector(".p"); if(v==="__ander"){ pi.hidden=false; pi.value=""; pi.focus(); } else { pi.hidden=true; pi.value=v; } pi.dispatchEvent(new Event("input",{bubbles:true})); });
-    r.querySelector(".p").addEventListener("input",e=>{ const v=e.target.value, u=matUnit(v); if(u) r.querySelector(".u").value=u; r.querySelector(".m").hidden=!isBoord(v); }); }
+    r.querySelector(".p").addEventListener("input",e=>{ const v=e.target.value, u=matUnit(v); if(u) r.querySelector(".u").value=u; const mm=r.querySelector(".m"); (mm.closest(".combo")||mm).hidden=!isBoord(v); }); }
   if(kind==="afv") r.innerHTML=`<select class="s" aria-label="Soort afvoer"><option value="">Kies soort…</option>${opts(["Asfalt","Beton","Grond"], d.soort||"")}</select>
     <input class="q num" inputmode="decimal" placeholder="0" value="${d.hoeveelheid ?? ""}" aria-label="Hoeveelheid">
     <select class="u" aria-label="Eenheid">${opts(["m³","ton"], d.eenheid||"m³")}</select>`;
@@ -457,7 +464,8 @@ function renderParams(r, d){
   if(kind==="gen") P.innerHTML=`<label class="wide">Omschrijving<input class="p-post" list="dl-posten" value="${esc(d.post)}" autocomplete="off"></label>
     <label>Hoeveelheid<input class="p-hoeveelheid num" inputmode="decimal" value="${d.hoeveelheid ?? ""}"></label>
     <label>Eenheid<select class="p-eenheid">${opts(EH_POST, d.eenheid||actUnit(act)||"u")}</select></label>`;
-  else P.innerHTML=SPEC[kind].map(([k,lab,dl,u,wide])=> dl==="dl-tb"
+  const spec = kind==="bestr" && isBoord(d.type) ? "bestrBoord" : kind; r.dataset.spec=spec;
+  if(kind!=="gen") P.innerHTML=SPEC[spec].map(([k,lab,dl,u,wide])=> dl==="dl-tb"
     ? `<label>${lab}<select class="p-${k} sel-tb">${tbOpts(d[k]||"")}</select></label>`
     : `<label${wide?' class="wide"':""}>${lab}${u?` (${u})`:""}<input class="p-${k}${NUMF.has(k)?" num":""}"${NUMF.has(k)?' inputmode="decimal"':""}${dl?` list="${dl}"`:""} value="${esc(d[k] ?? "")}" autocomplete="off"></label>`).join("");
   const prev=[...document.querySelectorAll("#rows-post .p-uitvoerder")].map(s=>s.value).filter(Boolean).pop()||"";
@@ -469,6 +477,7 @@ function renderParams(r, d){
     P.querySelector(".leid .add").onclick=()=>{ addLeiding(lr,{hoeveelheid:1}).querySelector("select").focus(); saveDraft(); };
   }
   P.insertAdjacentHTML("afterbegin", `<label class="wide">Uitgevoerd door<select class="p-uitvoerder">${uitvoerderOpts(def)}</select></label>`);
+  if(kind==="bestr") P.querySelector(".p-type").addEventListener("change",()=>{ if(isBoord(P.querySelector(".p-type").value)!==(r.dataset.spec==="bestrBoord")) renderParams(r, readPost(r)); });
   updateCalc(r);
 }
 const LEID_DEFAULT=["LS","HS","EP","FOP","DB7","DB6","SRV 7x12+2x10","HDPE-50mm","Waterleiding","Gasleiding"];
@@ -490,7 +499,7 @@ function leidText(l){
   if(!Array.isArray(l)) return String(l);
   return l.map(x=>(x.hoeveelheid!=null?fmt(x.hoeveelheid)+"× ":"")+x.type).join(", ");
 }
-const TB_DEFAULT=["Dallen","Klinkers","Platines","Kasseien","Blauwe steen","Mozaïek","Beton","Asfalt","Volle grond","Dolomiet"];
+const TB_DEFAULT=["Dallen","Klinkers","Platines","Kasseien","Blauwe steen","Mozaïek","Beton","Asfalt","Volle grond","Dolomiet","Boordstenen"];
 function tbOpts(sel){
   const all=[...new Set([...((lists.typesBestrating&&lists.typesBestrating.length)?lists.typesBestrating:TB_DEFAULT), ...(sel?[sel]:[])])];
   return `<option value="">Kies…</option>`+opts(all, sel);
@@ -510,7 +519,7 @@ function readPost(r){
   if(!kind) return {activiteit:act};
   if(kind==="gen") return {activiteit:act, ...uitv(r), post:v("post"), hoeveelheid:num(v("hoeveelheid")), eenheid:v("eenheid")};
   const p={activiteit:act, ...uitv(r)};
-  SPEC[kind].forEach(([k])=>{ const raw=v(k); p[k]=NUMF.has(k)?num(raw):raw; });
+  SPEC[r.dataset.spec||kind].forEach(([k])=>{ const raw=v(k); p[k]=NUMF.has(k)?num(raw):raw; });
   if(kind==="graaf") p.leidingen=[...r.querySelectorAll(".leid-row")].map(x=>({type:x.querySelector(".l-type").value, hoeveelheid:num(x.querySelector(".l-q").value)})).filter(x=>x.type||x.hoeveelheid!=null);
   const c=computePost(kind,p);
   return {...p, post:c.desc, hoeveelheid:c.q, eenheid:c.eh, m2:c.m2, m3:c.m3};
@@ -520,7 +529,7 @@ function updateCalc(r){
   if(kind!=="graaf" && kind!=="bestr"){ out.textContent=""; return; }
   const p=readPost(r), bits=[];
   if(kind==="graaf"){ if(p.m2!=null) bits.push(fmt(p.m2)+" m² bestrating"); if(p.m3!=null) bits.push(fmt(p.m3)+" m³ uitgraving"); }
-  if(kind==="bestr" && p.hoeveelheid!=null) bits.push(fmt(p.hoeveelheid)+" m² herbestrating");
+  if(kind==="bestr" && r.dataset.spec!=="bestrBoord" && p.hoeveelheid!=null) bits.push(fmt(p.hoeveelheid)+" m² herbestrating");
   out.textContent = bits.length ? "= "+bits.join(" · ") : "";
 }
 document.querySelectorAll("[data-add]").forEach(b=>b.addEventListener("click",()=>{ const r=addRow(b.dataset.add); r.querySelector("input, select").focus(); }));
@@ -549,6 +558,7 @@ function fillForm(d){
   if(!(d.posten||[]).length) addRow("post");
   renderOA(d.onderaannemers||[]);
   photos=(d.fotos||[]).map(id=>({id,url:window.__blobUrl(id)})); renderPhotos();
+  const fw=$("#f-ref").closest(".combo"); if(fw) fw.dataset.ander=""; upgradeCombos(); refreshCombos();
 }
 function renderOA(checked){
   if(!$("#f-oa")) return;
@@ -625,7 +635,7 @@ $("#form").addEventListener("submit", async e=>{
   if(badL){ m.className="msg err"; m.textContent = badL.querySelector(".l-type").value ? "Vul bij elke aangelegde leiding het aantal in." : "Kies bij elke aangelegde leiding het type."; (badL.querySelector(".l-type").value?badL.querySelector(".l-q"):badL.querySelector(".l-type")).focus(); return; }
   const miss=[...document.querySelectorAll("#rows-post .row")].find(r=>{ const k=r.dataset.pk; return k && k!=="gen" && readPost(r).hoeveelheid==null; });
   if(miss){ const a=miss.querySelector(".a").value, k=miss.dataset.pk; m.className="msg err";
-    m.textContent = k==="bestr" ? `Vul bij ${a} de lengte en de breedte in.` : k==="bak" ? `Vul bij ${a} de hoeveelheid in.` : k==="opkuis" ? `Vul bij ${a} de duur in.` : `Vul bij ${a} de lengte in.`;
+    m.textContent = k==="bestr" ? (miss.dataset.spec==="bestrBoord" ? `Vul bij ${a} het aantal boordstenen in.` : `Vul bij ${a} de lengte en de breedte in.`) : k==="bak" ? `Vul bij ${a} de hoeveelheid in.` : k==="opkuis" ? `Vul bij ${a} de duur in.` : `Vul bij ${a} de lengte in.`;
     [...miss.querySelectorAll(".params input.num")].find(i=>!i.value)?.focus(); return; }
   const btn=$("#save"); btn.disabled=true; m.textContent="Opslaan…";
   try{
@@ -770,7 +780,7 @@ function waLine(p){
     if(f(p.dikteZand)) b.push(`zand ${f(p.dikteZand)}cm`);
     const c=[p.m2!=null?fmt(p.m2)+" m²":"", p.m3!=null?fmt(p.m3)+" m³":""].filter(Boolean).join(" / "); if(c) b.push(c);
     const lt=Array.isArray(p.leidingen)?p.leidingen.map(x=>`${fmt(x.hoeveelheid??0)}×${x.type}`).join(", "):""; if(lt) b.push(lt);
-  } else if(k==="bestr"){ if(p.type) b.push(p.type); if(f(p.lengte)||f(p.breedteBestr)) b.push(`${f(p.lengte)??"?"}×${f(p.breedteBestr)??"?"}`); }
+  } else if(k==="bestr"){ if(isBoord(p.type)){ b.push([p.type,p.maat].filter(Boolean).join(" ")); } else { if(p.type) b.push(p.type); if(f(p.lengte)||f(p.breedteBestr)) b.push(`${f(p.lengte)??"?"}×${f(p.breedteBestr)??"?"}`); } }
   else if(k==="kabel"){ if(p.type) b.push(p.type); }
   else if(k==="bak"){ [p.opdrachtgever,p.type].filter(Boolean).forEach(x=>b.push(x)); }
   else if(k==="opkuis"){ if(p.omschrijving) b.push(p.omschrijving); }
@@ -810,7 +820,7 @@ function csvText(list){
       const k=kindOf(p.activiteit), leid={}; if(Array.isArray(p.leidingen)) p.leidingen.forEach(x=>{ if(x.type) leid[x.type]=(leid[x.type]||0)+(x.hoeveelheid||0); });
       const oms = k==="opkuis"?p.omschrijving : (k==="gen"?p.post:"");
       row("Uitvoering",p.activiteit,p.uitvoerder||"",p.uitvoerderType==="oa"?"OA":p.uitvoerderType==="eigen"?"Eigen":"",p.type||"",p.opdrachtgever||"",oms||"",p.hoeveelheid,p.eenheid,
-        [n(p.lengte),n(p.breedteSleuf),n(p.diepte),n(p.breedteBestr),n(p.dikteFund),n(p.dikteZand),n(k==="bestr"?p.hoeveelheid:p.m2),n(p.m3)],leid);
+        [n(p.lengte),n(p.breedteSleuf),n(p.diepte),n(p.breedteBestr),n(p.dikteFund),n(p.dikteZand),n(k==="bestr"&&!isBoord(p.type)?p.hoeveelheid:p.m2),n(p.m3)],leid);
     });
     (r.materiaal||[]).forEach(p=>row("Aan te leveren","",'','',p.product||"","",p.maat||"",p.hoeveelheid,p.eenheid,noDims,null));
     (r.afvoer||[]).forEach(p=>row("Af te voeren","","","",p.soort||"","","",p.hoeveelheid,p.eenheid,noDims,null));
@@ -877,6 +887,34 @@ function renderWho(){
   else { const b=document.createElement("button"); b.className="btn small"; b.type="button"; b.textContent="Naam instellen"; b.onclick=()=>{ show("cfg"); $("#c-naam").focus(); }; w.append(b); }
 }
 // ---------- lijsten
+// ---------- keuzelijsten uit Instellingen (werkt ook op iPhone, waar suggestielijsten niet openklappen)
+function comboOpts(input){ const dl=document.getElementById(input.dataset.list||""); return dl?[...new Set([...dl.options].map(o=>o.value).filter(Boolean))]:[]; }
+function syncCombo(input){
+  const w=input.closest(".combo"); if(!w) return; const sel=w.querySelector("select.cb");
+  const L=comboOpts(input), v=input.value.trim(), other=input.dataset.other||"Ander…";
+  if(!L.length){ sel.hidden=true; input.hidden=false; return; }
+  const ander = w.dataset.ander==="1" || (v && !L.includes(v));
+  sel.hidden=false;
+  sel.innerHTML=`<option value="">Kies…</option>`+L.map(x=>`<option${!ander&&x===v?" selected":""}>${esc(x)}</option>`).join("")+`<option value="__ander"${ander?" selected":""}>${esc(other)}</option>`;
+  input.hidden=!ander;
+}
+function upgradeCombo(input){
+  if(input.closest(".combo")) return;
+  input.dataset.list=input.getAttribute("list"); input.removeAttribute("list");
+  const w=document.createElement("div"); w.className="combo"; w.hidden=input.hidden; input.hidden=false;
+  input.parentNode.insertBefore(w,input);
+  const sel=document.createElement("select"); sel.className="cb"; sel.setAttribute("aria-label",input.getAttribute("aria-label")||input.placeholder||"Kies");
+  w.append(sel,input);
+  sel.addEventListener("change",()=>{
+    if(sel.value==="__ander"){ w.dataset.ander="1"; input.value=""; input.hidden=false; input.focus(); }
+    else { w.dataset.ander=""; input.value=sel.value; input.hidden=true; }
+    input.dispatchEvent(new Event("input",{bubbles:true}));
+  });
+  syncCombo(input);
+}
+function refreshCombos(){ document.querySelectorAll(".combo input").forEach(syncCombo); }
+function upgradeCombos(){ document.querySelectorAll("#form input[list]").forEach(upgradeCombo); }
+new MutationObserver(upgradeCombos).observe(document.getElementById("form"),{childList:true,subtree:true});
 function applyLists(){
   const set=(id,arr)=>$(id).innerHTML=(arr||[]).map(v=>`<option value="${esc(v)}">`).join("");
   const usedWerven=[...new Set(reports.map(r=>r.referentie).filter(Boolean))];
@@ -890,6 +928,7 @@ function applyLists(){
   document.querySelectorAll("#rows-mat .row").forEach(r=>{ const s=r.querySelector(".ps"), v=r.querySelector(".p").value; if(s) s.innerHTML=matOpts(v); });
   document.querySelectorAll("#rows-post .sel-tb").forEach(s=>{ s.innerHTML=tbOpts(s.value); });
   document.querySelectorAll("#rows-post .l-type").forEach(s=>{ s.innerHTML=leidOpts(s.value); });
+  refreshCombos();
   document.querySelectorAll("#rows-post .a").forEach(s=>{ const v=s.value; s.innerHTML=`<option value="">Activiteit…</option>`+opts([...new Set([...actList(), ...(v?[v]:[])])], v); });
   LIST_KEYS.forEach(k=>{ const t=$("#c-"+k); if(t && t!==document.activeElement) t.value=(lists[k]||[]).join("\n"); });
 }
