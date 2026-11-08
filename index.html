@@ -64,6 +64,20 @@ textarea{min-height:96px;resize:vertical}
 .params label{justify-content:flex-end}
 .params input,.params select,.post-head select,.leid-row select,.leid-row input,.grid input,.grid select,.row input,.row select{height:42px;box-sizing:border-box}.params .wide{grid-column:1/-1}
 .calc{font:500 .85rem var(--mono);color:var(--ok);font-variant-numeric:tabular-nums}
+.xchips{display:flex;flex-direction:column;gap:4px;justify-content:flex-end;min-width:0}
+.xchip{display:flex;flex-direction:row;align-items:center;gap:7px;height:29px;padding:0 9px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);font-size:.8rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--fg);cursor:pointer;white-space:nowrap;overflow:hidden}
+.params .xchip{justify-content:flex-start}
+.xchip input{width:15px;height:15px;margin:0;flex:none}
+.xchip:has(input:checked){border-color:var(--fg);background:var(--sunk)}
+.extra-dets{display:flex;flex-direction:column;gap:8px;background:var(--sunk);border-radius:var(--r);padding:10px}
+.extra-dets[hidden]{display:none}
+.extra{display:flex;flex-direction:column;gap:8px;border-top:1px dashed var(--line);padding-top:10px}
+.extra-row{display:flex;flex-direction:column;gap:8px}
+.x-det{display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:8px;align-items:end}
+.x-det[hidden]{display:none}
+.extra-row .flag{margin:0;justify-content:flex-start;padding:9px 12px}
+.extra-row .flag:has(input:checked){border-color:var(--fg);background:var(--sunk)}
+
 .leid{display:flex;flex-direction:column;gap:6px;border-top:1px dashed var(--line);padding-top:10px}
 .leid-h{font-size:.78rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .leid-rows{display:flex;flex-direction:column;gap:6px}
@@ -207,8 +221,9 @@ tr:last-child td{border-bottom:0}
       <fieldset>
         <legend><span class="n">1</span>Werf</legend>
         <div class="grid keep2">
-          <label>Datum<input type="date" id="f-datum" required></label>
+          <label>Uitvoerdatum<input type="date" id="f-datum" required></label>
           <label>BC-nummer<input id="f-ref" list="dl-werven" inputmode="text" placeholder="BC-nummer" data-other="Nieuw BC-nummer…" autocomplete="off" required></label>
+          <label class="full">Ploeg / uitvoerder<select id="f-uitv" required></select></label>
         </div>
       </fieldset>
 
@@ -219,21 +234,21 @@ tr:last-child td{border-bottom:0}
       </fieldset>
 
       <fieldset>
-        <legend><span class="n">3</span>Aan te leveren materiaal</legend>
+        <legend><span class="n">3</span>Geleverd materiaal</legend>
         <div class="rows" id="rows-mat"></div>
         <button class="add" type="button" data-add="mat" style="margin-top:8px">+ Materiaal toevoegen</button>
       </fieldset>
 
       <fieldset>
-        <legend><span class="n">4</span>Af te voeren (stort)</legend>
+        <legend><span class="n">4</span>Afgevoerd (stort)</legend>
         <div class="rows" id="rows-afv"></div>
         <button class="add" type="button" data-add="afv" style="margin-top:8px">+ Afvoer toevoegen</button>
       </fieldset>
 
       <fieldset>
-        <legend><span class="n">5</span>Foto's &amp; opmerkingen</legend>
+        <legend><span class="n">5</span>Opmerkingen &amp; algemene foto's</legend>
         <div class="photos" id="photos" style="margin-bottom:12px">
-          <label class="camera" id="cam">Foto nemen of kiezen<input type="file" id="f-foto" accept="image/*" multiple></label>
+          <label class="camera" id="cam">Algemene foto<input type="file" id="f-foto" accept="image/*" multiple></label>
         </div>
         <p class="msg" id="photo-msg" hidden></p>
         <label>Opmerkingen<textarea id="f-opm" placeholder="Wat liep er goed of fout, schade, afspraken met bewoners of nutsbedrijven…"></textarea></label>
@@ -286,6 +301,7 @@ tr:last-child td{border-bottom:0}
       <label>Onderaannemers<textarea id="c-onderaannemers"></textarea></label>
       <label>Materialen<textarea id="c-producten"></textarea></label>
       <label>Afmetingen boordstenen<textarea id="c-maatBoordstenen"></textarea></label>
+      <label>Types goten<textarea id="c-typesGoten"></textarea></label>
       <label>Posten (meetstaat)<textarea id="c-posten"></textarea></label>
       <label>Lopende BC-nummers<textarea id="c-werven"></textarea></label>
       <label>Types bestrating<textarea id="c-typesBestrating"></textarea></label>
@@ -299,7 +315,7 @@ tr:last-child td{border-bottom:0}
 
   <datalist id="dl-werven"></datalist><datalist id="dl-ploegbazen"></datalist><datalist id="dl-posten"></datalist>
   <datalist id="dl-lev"></datalist><datalist id="dl-prod"></datalist><datalist id="dl-trans"></datalist>
-  <datalist id="dl-tb"></datalist><datalist id="dl-tk"></datalist><datalist id="dl-tbak"></datalist><datalist id="dl-og"></datalist><datalist id="dl-leid"></datalist><datalist id="dl-maat"></datalist>
+  <datalist id="dl-tb"></datalist><datalist id="dl-tk"></datalist><datalist id="dl-tbak"></datalist><datalist id="dl-og"></datalist><datalist id="dl-leid"></datalist><datalist id="dl-maat"></datalist><datalist id="dl-goot"></datalist>
 </div>
 
 <script>
@@ -326,7 +342,7 @@ function docRef(path){
     get:async()=>snap(id,cur()),
     set:async d=>{ if(c==="config"){ lijsten=d; wr(LS_L,d); } else { reps[id]=d; wr(LS_R,reps); } fire(); },
     update:async d=>{ if(c==="config"){ lijsten={...lijsten,...d}; wr(LS_L,lijsten); } else { reps[id]={...reps[id],...d}; wr(LS_R,reps); } fire(); },
-    delete:async()=>{ if(c==="rapporten"){ const f=(reps[id]||{}).fotos||[]; delete reps[id]; wr(LS_R,reps); f.forEach(fid=>tx("readwrite",s=>s.delete(fid)).catch(()=>{})); } fire(); },
+    delete:async()=>{ if(c==="rapporten"){ const f=[...((reps[id]||{}).fotos||[]), ...((reps[id]||{}).posten||[]).flatMap(p=>p.fotos||[])]; delete reps[id]; wr(LS_R,reps); f.forEach(fid=>tx("readwrite",s=>s.delete(fid)).catch(()=>{})); } fire(); },
     onSnapshot:next=>{ const f=()=>next(snap(id,cur())); listeners.push(f); setTimeout(f,0); return ()=>{}; } };
 }
 const col={ orderBy(){ return this; }, limit(){ return this; }, doc:id=>docRef("rapporten/"+id),
@@ -357,11 +373,11 @@ const matList = () => (lists.producten&&lists.producten.length)?lists.producten:
 function matOpts(sel){ const L=matList(), other=sel && !L.includes(sel); return `<option value="">Kies materiaal…</option>`+opts(L, other?"":sel)+`<option value="__ander"${other?" selected":""}>Ander materiaal…</option>`; }
 const isBoord = p => /boord/i.test(p||"");
 const matUnit = p => /klinker|dal(len)?\b|tegel/i.test(p||"") ? "pal" : isBoord(p) ? "st" : /stabili|zand|beton|dolom|dolem|grond/i.test(p||"") ? "m³" : "";
-const LIST_KEYS = ["maatBoordstenen","activiteiten","ploegbazen","onderaannemers","producten","posten","werven","typesBestrating","leidingen","typesKabel","typesBak","opdrachtgevers"];
+const LIST_KEYS = ["typesGoten","maatBoordstenen","activiteiten","ploegbazen","onderaannemers","producten","posten","werven","typesBestrating","leidingen","typesKabel","typesBak","opdrachtgevers"];
 // Parameters per soort activiteit (herkend aan de naam, zodat hernoemen in Lijsten blijft werken)
 const kindOf = a => !a ? "" : /graaf/i.test(a) ? "graaf" : /bestrat/i.test(a) ? "bestr" : /kabel/i.test(a) ? "kabel" : /bak/i.test(a) ? "bak" : /opkuis/i.test(a) ? "opkuis" : "gen";
 const SPEC = {
-  graaf:[["type","Type bestrating","dl-tb",""],["lengte","Lengte sleuf","","m"],["breedteBestr","Breedte bestrating","","m"],["breedteSleuf","Breedte sleuf","","m"],["dikteFund","Dikte fundering","","cm"],["diepte","Diepte sleuf","","m"],["dikteZand","Dikte zandvervanging","","cm"]],
+  graaf:[["type","Type bestrating","dl-tb",""],["lengte","Lengte sleuf","","m"],["breedteBestr","Breedte bestrating","","m"],["breedteSleuf","Breedte sleuf","","m"],["diepte","Diepte sleuf","","m"],["dikteFund","Dikte fundering","","cm"],["dikteZand","Dikte zandvervanging","","cm"]],
   bestr:[["type","Type bestrating","dl-tb",""],["lengte","Lengte","","m"],["breedteBestr","Breedte bestrating","","m"]],
   bestrBoord:[["type","Type bestrating","dl-tb",""],["aantal","Aantal","","st"],["maat","Afmeting","dl-maat",""]],
   kabel:[["type","Type kabel","dl-tk",""],["lengte","Lengte","","m"]],
@@ -391,6 +407,8 @@ function paramText(p){
     if(f(p.breedteBestr)) bits.push("bestr. "+f(p.breedteBestr)+" m breed");
     if(f(p.dikteFund)) bits.push("fund. "+f(p.dikteFund)+" cm");
     if(f(p.dikteZand)) bits.push("zandverv. "+f(p.dikteZand)+" cm");
+    if(p.boordLengte!=null) bits.push("boordstenen "+(p.boordType?p.boordType+" ":"")+fmt(p.boordLengte)+" m");
+    if(p.gootLengte!=null) bits.push("goten "+(p.gootType?p.gootType+" ":"")+fmt(p.gootLengte)+" m");
     const lt=leidText(p.leidingen); if(lt) bits.push("leidingen: "+lt);
     if(p.m2!=null) bits.push("= "+fmt(p.m2)+" m² bestrating");
     if(p.m3!=null) bits.push(fmt(p.m3)+" m³ uitgraving");
@@ -449,8 +467,11 @@ function addRow(kind, d={}){
 function xBtn(r){ const x=document.createElement("button"); x.type="button"; x.className="x"; x.textContent="×"; x.setAttribute("aria-label","Post verwijderen"); x.onclick=()=>{ r.remove(); saveDraft(); }; return x; }
 function buildPost(r, d){
   r.innerHTML=`<div class="post-head"><select class="a" aria-label="Activiteit"><option value="">Kies activiteit…</option>${opts([...new Set([...actList(), ...(d.activiteit?[d.activiteit]:[])])], d.activiteit)}</select></div>
-    <div class="params"></div><div class="calc" aria-live="polite"></div>`;
+    <div class="params"></div><div class="calc" aria-live="polite"></div>
+    <div class="photos post-photos"><label class="camera">📷 Foto bij deze post<input type="file" class="pf" accept="image/*" multiple></label></div><p class="msg pf-msg" hidden></p>`;
   r.querySelector(".post-head").append(xBtn(r));
+  r._fotos=(d.fotos||[]).map(id=>({id,url:window.__blobUrl(id)})); renderPostPhotos(r);
+  r.querySelector(".pf").addEventListener("change",e=>{ const files=[...e.target.files]; e.target.value=""; const m=r.querySelector(".pf-msg"); m.hidden=true; addImages(files, r._fotos, ()=>renderPostPhotos(r), m); });
   renderParams(r, d);
   r.querySelector(".a").addEventListener("change",()=>{ const keep=readPost(r); renderParams(r, keep); r.querySelector(".params input")?.focus(); });
   r.addEventListener("input",()=>updateCalc(r));
@@ -471,12 +492,21 @@ function renderParams(r, d){
   const prev=[...document.querySelectorAll("#rows-post .p-uitvoerder")].map(s=>s.value).filter(Boolean).pop()||"";
   const def = d.uitvoerder ? (d.uitvoerderType==="oa"?"oa:":"eigen:")+d.uitvoerder : prev;
   if(kind==="graaf"){
+    const xd=(key,tkey,lab,dl,ph,val,tval)=>`<div class="x-det" data-key="${key}" data-lab="${lab.toLowerCase()}"${val!=null?"":" hidden"}><label>Type ${lab.toLowerCase()}<input class="p-${tkey}" list="${dl}" placeholder="${ph}" value="${esc(tval??"")}" autocomplete="off"></label>${key==="boordLengte"?`<p class="msg" style="margin:0;align-self:end;padding-bottom:10px">Lengte = lengte sleuf</p>`:`<label class="len">Lengte (m)<input class="p-${key} num" inputmode="decimal" placeholder="0" value="${val??""}"></label>`}</div>`;
+    const xc=(key,lab,val)=>`<label class="xchip"><input type="checkbox" class="x-${key}" data-key="${key}"${val!=null?" checked":""}>${lab}</label>`;
+    const typeLabel=P.querySelector(".p-type")?.closest("label");
+    const chips=`<div class="xchips" role="group" aria-label="Ook uitgebroken">${xc("boordLengte","+ Boordstenen",d.boordLengte)}${xc("gootLengte","+ Goten",d.gootLengte)}</div>`;
+    const dets=`<div class="wide extra-dets"${d.boordLengte!=null||d.gootLengte!=null?"":" hidden"}>${xd("boordLengte","boordType","Boordstenen","dl-maat","bv. 100×30×15",d.boordLengte,d.boordType)}${xd("gootLengte","gootType","Goten","dl-goot","bv. betongoot 30 cm",d.gootLengte,d.gootType)}</div>`;
+    if(typeLabel) typeLabel.insertAdjacentHTML("afterend", chips+dets); else P.insertAdjacentHTML("beforeend", chips+dets);
+    const detBox=P.querySelector(".extra-dets");
+    P.querySelectorAll(".xchip input").forEach(cb=>{
+      cb.addEventListener("change",()=>{ const det=detBox.querySelector(`.x-det[data-key="${cb.dataset.key}"]`); det.hidden=!cb.checked; detBox.hidden=![...detBox.querySelectorAll(".x-det")].some(x=>!x.hidden);
+        if(cb.checked){ const i=det.querySelector("label.len input"); if(i && !i.value){ const L=r.querySelector(".p-lengte")?.value; if(L) i.value=L; } (det.querySelector("select.cb:not([hidden])")||det.querySelector("input"))?.focus(); } }); });
     P.insertAdjacentHTML("beforeend", `<div class="wide leid"><span class="leid-h">Aangelegde leidingen</span><div class="leid-rows"></div><button class="add" type="button">+ Leiding toevoegen</button></div>`);
     const lr=P.querySelector(".leid-rows");
     (Array.isArray(d.leidingen)?d.leidingen:[]).forEach(l=>addLeiding(lr,l));
     P.querySelector(".leid .add").onclick=()=>{ addLeiding(lr,{hoeveelheid:1}).querySelector("select").focus(); saveDraft(); };
   }
-  P.insertAdjacentHTML("afterbegin", `<label class="wide">Uitgevoerd door<select class="p-uitvoerder">${uitvoerderOpts(def)}</select></label>`);
   if(kind==="bestr") P.querySelector(".p-type").addEventListener("change",()=>{ if(isBoord(P.querySelector(".p-type").value)!==(r.dataset.spec==="bestrBoord")) renderParams(r, readPost(r)); });
   updateCalc(r);
 }
@@ -512,14 +542,16 @@ function uitvoerderOpts(sel){
     + (eigen.length?`<optgroup label="Eigen ploegen">${eigen.map(n=>o("eigen:"+n,"Ploeg "+n)).join("")}</optgroup>`:"")
     + (oa.length?`<optgroup label="Onderaannemers">${oa.map(n=>o("oa:"+n,n)).join("")}</optgroup>`:"");
 }
-function uitv(r){ const v=r.querySelector(".p-uitvoerder")?.value||""; if(!v) return {uitvoerder:"",uitvoerderType:""}; const i=v.indexOf(":"); return {uitvoerderType:v.slice(0,i), uitvoerder:v.slice(i+1)}; }
+function uitv(r){ const v=(document.getElementById("f-uitv")||{}).value||""; if(!v) return {uitvoerder:"",uitvoerderType:""}; const i=v.indexOf(":"); return {uitvoerderType:v.slice(0,i), uitvoerder:v.slice(i+1)}; }
 const uitvLabel = p => !p.uitvoerder ? "" : (p.uitvoerderType==="oa" ? p.uitvoerder+" (OA)" : "Ploeg "+p.uitvoerder);
-function readPost(r){
+function readPost(r){ return {...readPostCore(r), fotos:(r._fotos||[]).filter(f=>f.id).map(f=>f.id)}; }
+function readPostCore(r){
   const act=r.querySelector(".a").value, kind=r.dataset.pk, v=c=>r.querySelector(".p-"+c)?.value.trim() ?? "";
   if(!kind) return {activiteit:act};
   if(kind==="gen") return {activiteit:act, ...uitv(r), post:v("post"), hoeveelheid:num(v("hoeveelheid")), eenheid:v("eenheid")};
   const p={activiteit:act, ...uitv(r)};
   SPEC[r.dataset.spec||kind].forEach(([k])=>{ const raw=v(k); p[k]=NUMF.has(k)?num(raw):raw; });
+  if(kind==="graaf") [["boordLengte","boordType"],["gootLengte","gootType"]].forEach(([k,t])=>{ const cb=r.querySelector(".x-"+k), on=cb&&cb.checked; p[k]= on ? (k==="boordLengte" ? (p.lengte??0) : (num(v(k))??0)) : null; p[t]= on ? v(t) : ""; });
   if(kind==="graaf") p.leidingen=[...r.querySelectorAll(".leid-row")].map(x=>({type:x.querySelector(".l-type").value, hoeveelheid:num(x.querySelector(".l-q").value)})).filter(x=>x.type||x.hoeveelheid!=null);
   const c=computePost(kind,p);
   return {...p, post:c.desc, hoeveelheid:c.q, eenheid:c.eh, m2:c.m2, m3:c.m3};
@@ -545,19 +577,22 @@ function rows(kind){
 }
 function readForm(){
   return {
-    datum:$("#f-datum").value, referentie:$("#f-ref").value.trim(),
+    datum:$("#f-datum").value, referentie:$("#f-ref").value.trim(), ...uitv(),
     posten:rows("post"), materiaal:rows("mat"), afvoer:rows("afv"),
     opmerkingen:$("#f-opm").value.trim(), actie:$("#f-actie").checked, fotos:photos.filter(p=>p.id).map(p=>p.id)
   };
 }
 function fillForm(d){
   $("#f-datum").value=d.datum||iso(new Date()); $("#f-ref").value=d.referentie||"";
+  { const u=d.uitvoerder?d:((d.posten||[]).find(p=>p.uitvoerder)||{}); const sel=u.uitvoerder?(u.uitvoerderType==="oa"?"oa:":"eigen:")+u.uitvoerder:""; $("#f-uitv").innerHTML=uitvoerderOpts(sel); $("#f-uitv").value=sel; }
   $("#f-opm").value=d.opmerkingen||""; $("#f-actie").checked=!!d.actie;
   ["post","mat","afv"].forEach(k=>$("#rows-"+k).innerHTML="");
   (d.posten||[]).forEach(p=>addRow("post",p)); (d.materiaal||[]).forEach(p=>addRow("mat",p)); (d.afvoer||[]).forEach(p=>addRow("afv",p));
   if(!(d.posten||[]).length) addRow("post");
   renderOA(d.onderaannemers||[]);
   photos=(d.fotos||[]).map(id=>({id,url:window.__blobUrl(id)})); renderPhotos();
+  const ids=[...(d.posten||[]).flatMap(p=>p.fotos||[]), ...(d.fotos||[])];
+  if(ids.length && window.__loadBlobs) window.__loadBlobs(ids).then(()=>{ photos.forEach(p=>{ if(!p.url) p.url=window.__blobUrl(p.id); }); renderPhotos(); document.querySelectorAll("#rows-post .row").forEach(renderPostPhotos); });
   const fw=$("#f-ref").closest(".combo"); if(fw) fw.dataset.ander=""; upgradeCombos(); refreshCombos();
 }
 function renderOA(checked){
@@ -574,6 +609,33 @@ $("#form").addEventListener("input", saveDraft); $("#form").addEventListener("ch
 function loadDraft(){ try{ const d=JSON.parse(localStorage.getItem("wd-draft")||"null"); if(d) return d; }catch(e){} return null; }
 
 // ---------- photos
+// ---------- foto's per post
+const allFotos = r => [...(r.posten||[]).flatMap(p=>p.fotos||[]), ...(r.fotos||[])];
+async function addImages(files, list, rerender, msg){
+  for(const f of files){
+    const slot={id:null,url:null}; list.push(slot); rerender();
+    try{
+      const blob=await shrink(f); slot.url=URL.createObjectURL(blob); rerender();
+      const type=["image/jpeg","image/png","image/webp"].includes(blob.type)?blob.type:"image/jpeg";
+      const res=await assets.upload(blob,{type}); slot.id=res.id; slot.url=res.url;
+    }catch(err){
+      list.splice(list.indexOf(slot),1);
+      if(msg){ msg.hidden=false; msg.className="msg err"; msg.textContent = err?.code==="too_large" ? "Deze foto is te groot." : "Foto bewaren lukte niet. Probeer opnieuw."; }
+    }
+    rerender(); saveDraft();
+  }
+}
+function renderPostPhotos(r){
+  const box=r.querySelector(".post-photos"); if(!box) return; box.querySelectorAll(".ph").forEach(n=>n.remove());
+  const cam=box.querySelector(".camera"); const list=r._fotos||(r._fotos=[]);
+  list.forEach((p,i)=>{
+    const d=document.createElement("div"); d.className="ph"+(p.id?"":" busy");
+    const url=p.url||window.__blobUrl(p.id||"");
+    if(url){ const im=document.createElement("img"); im.src=url; im.alt="Foto post "+(i+1); d.append(im); }
+    if(p.id){ const b=document.createElement("button"); b.type="button"; b.textContent="×"; b.setAttribute("aria-label","Foto weghalen"); b.onclick=()=>{ list.splice(i,1); renderPostPhotos(r); saveDraft(); }; d.append(b); }
+    box.insertBefore(d,cam);
+  });
+}
 function renderPhotos(){
   const box=$("#photos"); box.querySelectorAll(".ph").forEach(n=>n.remove());
   const cam=$("#cam");
@@ -620,19 +682,20 @@ $("#form").addEventListener("submit", async e=>{
   e.preventDefault();
   const m=$("#save-msg"); m.className="msg";
   if(!db){ m.className="msg err"; m.textContent="Opslaan kan niet: de gedeelde opslag is niet beschikbaar."; return; }
-  if(photos.some(p=>!p.id)){ m.textContent="Wacht tot de foto's geüpload zijn."; return; }
+  if(photos.some(p=>!p.id) || [...document.querySelectorAll("#rows-post .row")].some(r=>(r._fotos||[]).some(f=>!f.id))){ m.textContent="Wacht tot de foto's geüpload zijn."; return; }
   const d=readForm();
-  if(!d.datum || !d.referentie){ m.className="msg err"; m.textContent="Vul de datum en het BC-nummer in."; (!d.datum?$("#f-datum"):$("#f-ref")).focus(); return; }
+  if(!d.datum || !d.referentie){ m.className="msg err"; m.textContent="Vul de uitvoerdatum en het BC-nummer in."; (!d.datum?$("#f-datum"):$("#f-ref")).focus(); return; }
   if(!d.posten.length && !d.opmerkingen){ m.className="msg err"; m.textContent="Voeg minstens één uitgevoerde post of een opmerking toe."; return; }
   if(d.posten.some(p=>!p.activiteit)){ m.className="msg err"; m.textContent="Kies bij elke uitgevoerde post een activiteit."; const bad=[...document.querySelectorAll("#rows-post .a")].find(s=>!s.value); bad?.focus(); return; }
-  const noUitv=[...document.querySelectorAll("#rows-post .row")].find(r=>r.dataset.pk && !uitv(r).uitvoerder);
-  if(noUitv){ m.className="msg err"; m.textContent=`Duid bij ${noUitv.querySelector(".a").value} aan wie het werk uitvoerde.`; noUitv.querySelector(".p-uitvoerder")?.focus(); return; }
+  if(!uitv().uitvoerder){ m.className="msg err"; m.textContent="Kies bovenaan de ploeg of onderaannemer van dit rapport."; $("#f-uitv").focus(); return; }
   const badA=[...document.querySelectorAll("#rows-afv .row")].find(x=>{ const s=x.querySelector(".s").value, q=num(x.querySelector(".q").value); return (s&&q==null)||(!s&&q!=null); });
   if(badA){ m.className="msg err"; m.textContent = badA.querySelector(".s").value ? "Vul bij elke afvoer de hoeveelheid in." : "Kies bij elke afvoer asfalt, beton of grond."; (badA.querySelector(".s").value?badA.querySelector(".q"):badA.querySelector(".s")).focus(); return; }
   const badM=[...document.querySelectorAll("#rows-mat .row")].find(x=>isBoord(x.querySelector(".p").value) && !x.querySelector(".m").value.trim());
   if(badM){ m.className="msg err"; m.textContent="Vul bij de boordstenen de afmeting in."; badM.querySelector(".m").focus(); return; }
   const badL=[...document.querySelectorAll("#rows-post .leid-row")].find(x=>{ const t=x.querySelector(".l-type").value, q=num(x.querySelector(".l-q").value); return (t&&q==null)||(!t&&q!=null); });
   if(badL){ m.className="msg err"; m.textContent = badL.querySelector(".l-type").value ? "Vul bij elke aangelegde leiding het aantal in." : "Kies bij elke aangelegde leiding het type."; (badL.querySelector(".l-type").value?badL.querySelector(".l-q"):badL.querySelector(".l-type")).focus(); return; }
+  const badX=[...document.querySelectorAll("#rows-post .x-det:not([hidden])")].find(x=>x.querySelector("label.len input") && !num(x.querySelector("label.len input").value));
+  if(badX){ m.className="msg err"; m.textContent=`Vul de lengte in van de uitgebroken ${badX.dataset.lab}.`; badX.querySelector("label.len input").focus(); return; }
   const miss=[...document.querySelectorAll("#rows-post .row")].find(r=>{ const k=r.dataset.pk; return k && k!=="gen" && readPost(r).hoeveelheid==null; });
   if(miss){ const a=miss.querySelector(".a").value, k=miss.dataset.pk; m.className="msg err";
     m.textContent = k==="bestr" ? (miss.dataset.spec==="bestrBoord" ? `Vul bij ${a} het aantal boordstenen in.` : `Vul bij ${a} de lengte en de breedte in.`) : k==="bak" ? `Vul bij ${a} de hoeveelheid in.` : k==="opkuis" ? `Vul bij ${a} de duur in.` : `Vul bij ${a} de lengte in.`;
@@ -644,7 +707,7 @@ $("#form").addEventListener("submit", async e=>{
     m.className="msg ok"; m.textContent = editingId ? "Rapport bijgewerkt." : "Rapport opgeslagen.";
     try{ localStorage.removeItem("wd-draft"); }catch(err){}
     showShare({...d, auteur: editingId ? (reports.find(x=>x.id===editingId)?.auteur||myId) : myId});
-    const keep={datum:d.datum};
+    const keep={datum:d.datum, uitvoerder:d.uitvoerder, uitvoerderType:d.uitvoerderType};
     editingId=null; $("#edit-banner").hidden=true; fillForm(keep);
   }catch(err){
     m.className="msg err";
@@ -690,23 +753,23 @@ async function renderList(){
     const d=asDate(r.datum);
     const tot=(r.posten||[]).slice(0,3).map(p=>`${esc(p.activiteit||p.post||"post")} ${p.hoeveelheid!=null?fmt(p.hoeveelheid)+" "+esc(p.eenheid):""}`).join(" · ");
     return `<button class="card" type="button" data-id="${esc(r.id)}"><div class="d">${d.toLocaleDateString("nl-BE",{weekday:"short"})}<b>${d.toLocaleDateString("nl-BE",{day:"2-digit",month:"2-digit"})}</b></div>
-      <div><div class="t">${r.referentie?"BC "+esc(r.referentie):esc(r.werf||"Zonder BC-nummer")}${r.actie?'<span class="pill warn">Actie</span>':""}${(r.fotos||[]).length?`<span class="pill cam">${r.fotos.length} foto</span>`:""}</div>
+      <div><div class="t">${r.referentie?"BC "+esc(r.referentie):esc(r.werf||"Zonder BC-nummer")}${r.actie?'<span class="pill warn">Actie</span>':""}${allFotos(r).length?`<span class="pill cam">${allFotos(r).length} foto</span>`:""}</div>
       <div class="s">${esc(nm(r.auteur))}${(()=>{ const u=[...new Set((r.posten||[]).map(uitvLabel).filter(Boolean))]; return u.length?" · "+esc(u.join(", ")):""; })()}</div>
       ${tot?`<div class="s">${tot}</div>`:""}</div></button>`;
   }).join("");
   L.querySelectorAll(".card").forEach(c=>c.onclick=()=>{ openId=c.dataset.id; renderDetail(); window.scrollTo({top:0,behavior:"smooth"}); });
   // totals
   const g={};
-  rs.forEach(r=>(r.posten||[]).forEach(p=>{ if(p.hoeveelheid==null) return; const act=p.activiteit||"Zonder activiteit"; const k=act+"|"+(p.post||"").trim().toLowerCase()+"|"+p.eenheid; (g[k] ||= {act,post:p.post||"—",eh:p.eenheid,q:0,m2:0,m3:0}); g[k].q+=p.hoeveelheid; g[k].m2+=p.m2||0; g[k].m3+=p.m3||0; }));
+  rs.forEach(r=>(r.posten||[]).forEach(p=>{ if(p.hoeveelheid==null) return; const act=p.activiteit||"Zonder activiteit"; const k=act+"|"+(p.post||"").trim().toLowerCase()+"|"+p.eenheid; (g[k] ||= {act,post:p.post||"—",eh:p.eenheid,q:0,m2:0,m3:0}); g[k].q+=p.hoeveelheid; g[k].m2+=p.m2||0; g[k].m3+=p.m3||0; g[k].bo=(g[k].bo||0)+(p.boordLengte||0); g[k].go=(g[k].go||0)+(p.gootLengte||0); }));
   const order=actList();
   const ai=a=>{ const i=order.indexOf(a); return i<0?999:i; };
   const t=Object.values(g).sort((a,b)=>ai(a.act)-ai(b.act)||a.act.localeCompare(b.act,"nl")||a.post.localeCompare(b.post,"nl"));
   const trows=[]; let lastAct=null;
   t.forEach(x=>{
-    if(x.act!==lastAct){ lastAct=x.act; const sums={}; let m2=0,m3=0; t.filter(y=>y.act===x.act).forEach(y=>{ sums[y.eh]=(sums[y.eh]||0)+y.q; m2+=y.m2; m3+=y.m3; });
-      const extra=[m2?fmt(m2)+" m² bestr.":"", m3?fmt(m3)+" m³ uitgr.":""].filter(Boolean).join(" · ");
+    if(x.act!==lastAct){ lastAct=x.act; const sums={}; let m2=0,m3=0,bo=0,go=0; t.filter(y=>y.act===x.act).forEach(y=>{ sums[y.eh]=(sums[y.eh]||0)+y.q; m2+=y.m2; m3+=y.m3; bo+=y.bo||0; go+=y.go||0; });
+      const extra=[m2?fmt(m2)+" m² bestr.":"", m3?fmt(m3)+" m³ uitgr.":"", bo?fmt(bo)+" m boord":"", go?fmt(go)+" m goot":""].filter(Boolean).join(" · ");
       trows.push(`<tr class="grp"><td>${esc(x.act)}${extra?`<span class="sub">${extra}</span>`:""}</td><td class="n">${Object.entries(sums).map(([eh,q])=>fmt(q)+" "+esc(eh)).join(" · ")}</td><td></td></tr>`); }
-    const ex=[x.m2?fmt(x.m2)+" m² bestrating":"", x.m3?fmt(x.m3)+" m³ uitgraving":""].filter(Boolean).join(" · ");
+    const ex=[x.m2?fmt(x.m2)+" m² bestrating":"", x.m3?fmt(x.m3)+" m³ uitgraving":"", x.bo?fmt(x.bo)+" m boordstenen":"", x.go?fmt(x.go)+" m goten":""].filter(Boolean).join(" · ");
     trows.push(`<tr><td>${esc(x.post)}${ex?`<span class="sub">${ex}</span>`:""}</td><td class="n">${fmt(x.q)}</td><td>${esc(x.eh)}</td></tr>`);
   });
   const u={};
@@ -728,8 +791,8 @@ async function renderList(){
   $("#totals").innerHTML = (t.length ? `<div class="tbl"><table><thead><tr><th>Activiteit / omschrijving</th><th class="n">Totaal</th><th>Eh</th></tr></thead><tbody>${trows.join("")}</tbody></table></div>` : `<div class="empty">Geen hoeveelheden in deze selectie.</div>`)
     + (lt.length ? `<h2 style="margin-top:18px">Aangelegde leidingen</h2><div class="tbl"><table><thead><tr><th>Leiding</th><th class="n">Aantal</th><th class="n">Gelegd</th></tr></thead><tbody>${lt.map(([k,s])=>`<tr><td>${esc(k)}</td><td class="n">${fmt(s.st)} st</td><td class="n">${fmt(s.m)} m</td></tr>`).join("")}</tbody></table></div>` : "")
     + (ut.length ? `<h2 style="margin-top:18px">Per uitvoerder</h2><div class="tbl"><table><thead><tr><th>Uitvoerder / activiteit</th><th class="n">Totaal</th><th>Eh</th></tr></thead><tbody>${urows.join("")}</tbody></table></div>` : "")
-    + (aft.length ? `<h2 style="margin-top:18px">Af te voeren</h2><div class="tbl"><table><thead><tr><th>Soort</th><th class="n">Totaal</th><th>Eh</th></tr></thead><tbody>${aft.map(x=>`<tr><td>${esc(x.s)}</td><td class="n">${fmt(x.q)}</td><td>${esc(x.eh)}</td></tr>`).join("")}</tbody></table></div>` : "")
-    + (mt.length ? `<h2 style="margin-top:18px">Aan te leveren materiaal</h2><div class="tbl"><table><thead><tr><th>Materiaal</th><th class="n">Totaal</th><th>Eh</th></tr></thead><tbody>${mt.map(x=>`<tr><td>${esc(x.p)}</td><td class="n">${fmt(x.q)}</td><td>${esc(x.eh)}</td></tr>`).join("")}</tbody></table></div>` : "")
+    + (aft.length ? `<h2 style="margin-top:18px">Afgevoerd (stort)</h2><div class="tbl"><table><thead><tr><th>Soort</th><th class="n">Totaal</th><th>Eh</th></tr></thead><tbody>${aft.map(x=>`<tr><td>${esc(x.s)}</td><td class="n">${fmt(x.q)}</td><td>${esc(x.eh)}</td></tr>`).join("")}</tbody></table></div>` : "")
+    + (mt.length ? `<h2 style="margin-top:18px">Geleverd materiaal</h2><div class="tbl"><table><thead><tr><th>Materiaal</th><th class="n">Totaal</th><th>Eh</th></tr></thead><tbody>${mt.map(x=>`<tr><td>${esc(x.p)}</td><td class="n">${fmt(x.q)}</td><td>${esc(x.eh)}</td></tr>`).join("")}</tbody></table></div>` : "")
     + (ritten ? `<p class="msg">${fmt(ritten)} transportritten in deze selectie.</p>` : "");
   $("#export").hidden = !downloads || !rs.length;
   renderDetail();
@@ -747,11 +810,12 @@ function renderDetail(){
       <button class="btn small" type="button" id="d-close">Sluiten</button>
     </div>
     ${(r.posten||[]).length?`<h4>Uitgevoerd</h4>`+tbl(`<th>Activiteit</th><th>Uitvoerder</th><th>Details</th><th class="n">Hoev.</th><th>Eh</th>`, r.posten.map(p=>`<tr><td>${esc(p.activiteit||"—")}</td><td>${esc(uitvLabel(p)||"—")}</td><td>${esc(paramText(p))}</td><td class="n">${p.hoeveelheid!=null?fmt(p.hoeveelheid):"—"}</td><td>${esc(p.eenheid)}</td></tr>`)):""}
-    ${(r.afvoer||[]).length?`<h4>Af te voeren</h4>`+tbl(`<th>Soort</th><th class="n">Hoev.</th><th>Eh</th>`, r.afvoer.map(p=>`<tr><td>${esc(p.soort)}</td><td class="n">${p.hoeveelheid!=null?fmt(p.hoeveelheid):"—"}</td><td>${esc(p.eenheid)}</td></tr>`)):""}
-    ${(r.materiaal||[]).length?`<h4>Aan te leveren materiaal</h4>`+tbl(`<th>Materiaal</th><th class="n">Hoev.</th><th>Eh</th>`, r.materiaal.map(p=>`<tr><td>${esc(matName(p))}</td><td class="n">${p.hoeveelheid!=null?fmt(p.hoeveelheid):"—"}</td><td>${esc(p.eenheid)}</td></tr>`)):""}
+    ${(r.afvoer||[]).length?`<h4>Afgevoerd (stort)</h4>`+tbl(`<th>Soort</th><th class="n">Hoev.</th><th>Eh</th>`, r.afvoer.map(p=>`<tr><td>${esc(p.soort)}</td><td class="n">${p.hoeveelheid!=null?fmt(p.hoeveelheid):"—"}</td><td>${esc(p.eenheid)}</td></tr>`)):""}
+    ${(r.materiaal||[]).length?`<h4>Geleverd materiaal</h4>`+tbl(`<th>Materiaal</th><th class="n">Hoev.</th><th>Eh</th>`, r.materiaal.map(p=>`<tr><td>${esc(matName(p))}</td><td class="n">${p.hoeveelheid!=null?fmt(p.hoeveelheid):"—"}</td><td>${esc(p.eenheid)}</td></tr>`)):""}
     ${(r.transport||[]).length?`<h4>Transport</h4>`+tbl(`<th>Firma</th><th>Soort</th><th class="n">Ritten</th>`, r.transport.map(p=>`<tr><td>${esc(p.firma)}</td><td>${esc(p.soort)}</td><td class="n">${p.ritten??"—"}</td></tr>`)):""}
     ${r.opmerkingen?`<h4>Opmerkingen</h4><p>${esc(r.opmerkingen)}</p>`:""}
-    ${(r.fotos||[]).length?`<h4>Foto's</h4><div class="photos">${r.fotos.map((id,i)=>`<a class="ph" href="${esc(window.__blobUrl(id))}" target="_blank" rel="noopener"><img src="${esc(window.__blobUrl(id))}" alt="Werffoto ${i+1}" loading="lazy"></a>`).join("")}</div>`:""}
+    ${(r.posten||[]).some(p=>(p.fotos||[]).length)?`<h4>Foto's per post</h4>`+(r.posten||[]).filter(p=>(p.fotos||[]).length).map(p=>`<p style="margin:8px 0 4px;font-weight:600">${esc(p.activiteit||"Post")}${uitvLabel(p)?" · "+esc(uitvLabel(p)):""}</p><div class="photos">${p.fotos.map((id,i)=>`<a class="ph" href="${esc(window.__blobUrl(id))}" target="_blank" rel="noopener"><img src="${esc(window.__blobUrl(id))}" alt="Foto ${esc(p.activiteit||"post")} ${i+1}" loading="lazy"></a>`).join("")}</div>`).join(""):""}
+    ${(r.fotos||[]).length?`<h4>Algemene foto's</h4><div class="photos">${r.fotos.map((id,i)=>`<a class="ph" href="${esc(window.__blobUrl(id))}" target="_blank" rel="noopener"><img src="${esc(window.__blobUrl(id))}" alt="Werffoto ${i+1}" loading="lazy"></a>`).join("")}</div>`:""}
     <div class="share-btns" style="margin-top:14px"><a class="btn small wa" href="${esc(waLink(r))}" target="_blank" rel="noopener">Verstuur via WhatsApp</a>${canShareFiles(r)?'<button class="btn small" type="button" id="d-share">Delen met foto\'s</button>':""}<button class="btn small" type="button" id="d-csv">CSV delen</button></div><p class="msg" id="d-share-msg" hidden></p>
     ${canChange?`<div class="confirm" style="margin-top:10px" id="d-act"><button class="btn small" type="button" id="d-edit">Bewerken</button><button class="btn small danger" type="button" id="d-del">Verwijderen</button></div>`:""}
   </div>`;
@@ -779,12 +843,14 @@ function waLine(p){
     if(f(p.dikteFund)) b.push(`fund ${f(p.dikteFund)}cm`);
     if(f(p.dikteZand)) b.push(`zand ${f(p.dikteZand)}cm`);
     const c=[p.m2!=null?fmt(p.m2)+" m²":"", p.m3!=null?fmt(p.m3)+" m³":""].filter(Boolean).join(" / "); if(c) b.push(c);
+    const ub=[p.boordLengte!=null?"boord "+(p.boordType?p.boordType+" ":"")+fmt(p.boordLengte)+" m":"", p.gootLengte!=null?"goot "+(p.gootType?p.gootType+" ":"")+fmt(p.gootLengte)+" m":""].filter(Boolean).join(", "); if(ub) b.push("+ "+ub);
     const lt=Array.isArray(p.leidingen)?p.leidingen.map(x=>`${fmt(x.hoeveelheid??0)}×${x.type}`).join(", "):""; if(lt) b.push(lt);
   } else if(k==="bestr"){ if(isBoord(p.type)){ b.push([p.type,p.maat].filter(Boolean).join(" ")); } else { if(p.type) b.push(p.type); if(f(p.lengte)||f(p.breedteBestr)) b.push(`${f(p.lengte)??"?"}×${f(p.breedteBestr)??"?"}`); } }
   else if(k==="kabel"){ if(p.type) b.push(p.type); }
   else if(k==="bak"){ [p.opdrachtgever,p.type].filter(Boolean).forEach(x=>b.push(x)); }
   else if(k==="opkuis"){ if(p.omschrijving) b.push(p.omschrijving); }
   else if(p.post) b.push(p.post);
+  if((p.fotos||[]).length) b.push(`📷 ${p.fotos.length}`);
   return "- "+b.join(" | ");
 }
 function waText(r){
@@ -797,10 +863,10 @@ function waText(r){
   const lev=(r.materiaal||[]).map(p=>`${matName(p)} ${p.hoeveelheid!=null?fmt(p.hoeveelheid)+" "+p.eenheid:""}`.trim());
   const afv=(r.afvoer||[]).map(p=>`${p.soort||"?"} ${p.hoeveelheid!=null?fmt(p.hoeveelheid)+" "+p.eenheid:""}`.trim());
   if(lev.length||afv.length) L.push("");
-  if(lev.length) L.push(`*Aan te leveren:* ${lev.join(", ")}`);
-  if(afv.length) L.push(`*Af te voeren:* ${afv.join(", ")}`);
+  if(lev.length) L.push(`*Geleverd:* ${lev.join(", ")}`);
+  if(afv.length) L.push(`*Afgevoerd:* ${afv.join(", ")}`);
   if(r.opmerkingen) L.push("",`*Opm.:* ${r.opmerkingen}`);
-  if((r.fotos||[]).length) L.push(`Foto's: ${r.fotos.length}`);
+  if(allFotos(r).length) L.push(`Foto's: ${allFotos(r).length}`);
   return L.join("\n");
 }
 // ---------- CSV voor de opvolgingsfile (puntkomma, decimale komma, 1 lijn per post)
@@ -809,21 +875,21 @@ function csvText(list){
   const n=v=>v==null||v===""?"":String(Math.round(v*1000)/1000).replace(".",",");
   const dmy=s=>{ const [y,m,d]=(s||"").split("-"); return d?`${d}/${m}/${y}`:""; };
   const lt=[...new Set([...((lists.leidingen&&lists.leidingen.length)?lists.leidingen:LEID_DEFAULT), ...list.flatMap(r=>(r.posten||[]).flatMap(p=>Array.isArray(p.leidingen)?p.leidingen.map(x=>x.type):[]))].filter(Boolean))];
-  const head=["Datum","Week","BC-nummer","Werfleider","Categorie","Activiteit","Uitvoerder","Eigen/OA","Type","Opdrachtgever","Omschrijving","Hoeveelheid","Eenheid","Lengte (m)","Breedte sleuf (m)","Diepte sleuf (m)","Breedte bestrating (m)","Dikte fundering (cm)","Dikte zandvervanging (cm)","Bestrating (m²)","Uitgraving (m³)",...lt.map(t=>t+" (st)"),"Actie nodig","Opmerking","Rapport-ID"];
+  const head=["Datum","Week","BC-nummer","Werfleider","Categorie","Activiteit","Uitvoerder","Eigen/OA","Type","Opdrachtgever","Omschrijving","Hoeveelheid","Eenheid","Lengte (m)","Breedte sleuf (m)","Diepte sleuf (m)","Breedte bestrating (m)","Dikte fundering (cm)","Dikte zandvervanging (cm)","Bestrating (m²)","Uitgraving (m³)","Boordstenen uitgebroken (m)","Type boordstenen","Goten uitgebroken (m)","Type goten",...lt.map(t=>t+" (st)"),"Actie nodig","Opmerking","Rapport-ID"];
   const out=[head.map(cell).join(";")];
   list.slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||"")||(a.referentie||"").localeCompare(b.referentie||"")).forEach(r=>{
     const base=[dmy(r.datum),isoWeek(asDate(r.datum)),r.referentie,nm(r.auteur)];
     let first=true;
     const row=(cat,act,uitv,oa,type,og,oms,q,eh,dims,leid)=>{ out.push([...base,cat,act,uitv,oa,type,og,oms,n(q),eh,...dims,...lt.map(t=>leid&&leid[t]!=null?n(leid[t]):""),r.actie?"ja":"",first?(r.opmerkingen||""):"",r.id||""].map(cell).join(";")); first=false; };
-    const noDims=Array(8).fill("");
+    const noDims=Array(12).fill("");
     (r.posten||[]).forEach(p=>{
       const k=kindOf(p.activiteit), leid={}; if(Array.isArray(p.leidingen)) p.leidingen.forEach(x=>{ if(x.type) leid[x.type]=(leid[x.type]||0)+(x.hoeveelheid||0); });
       const oms = k==="opkuis"?p.omschrijving : (k==="gen"?p.post:"");
       row("Uitvoering",p.activiteit,p.uitvoerder||"",p.uitvoerderType==="oa"?"OA":p.uitvoerderType==="eigen"?"Eigen":"",p.type||"",p.opdrachtgever||"",oms||"",p.hoeveelheid,p.eenheid,
-        [n(p.lengte),n(p.breedteSleuf),n(p.diepte),n(p.breedteBestr),n(p.dikteFund),n(p.dikteZand),n(k==="bestr"&&!isBoord(p.type)?p.hoeveelheid:p.m2),n(p.m3)],leid);
+        [n(p.lengte),n(p.breedteSleuf),n(p.diepte),n(p.breedteBestr),n(p.dikteFund),n(p.dikteZand),n(k==="bestr"&&!isBoord(p.type)?p.hoeveelheid:p.m2),n(p.m3),n(p.boordLengte),p.boordType||"",n(p.gootLengte),p.gootType||""],leid);
     });
-    (r.materiaal||[]).forEach(p=>row("Aan te leveren","",'','',p.product||"","",p.maat||"",p.hoeveelheid,p.eenheid,noDims,null));
-    (r.afvoer||[]).forEach(p=>row("Af te voeren","","","",p.soort||"","","",p.hoeveelheid,p.eenheid,noDims,null));
+    (r.materiaal||[]).forEach(p=>row("Geleverd","",'','',p.product||"","",p.maat||"",p.hoeveelheid,p.eenheid,noDims,null));
+    (r.afvoer||[]).forEach(p=>row("Afgevoerd","","","",p.soort||"","","",p.hoeveelheid,p.eenheid,noDims,null));
     if(first) row("Opmerking","","","","","","",null,"",noDims,null);
   });
   return "﻿"+out.join("\r\n");
@@ -838,7 +904,11 @@ async function shareCsv(r,msgEl){
 }
 const waLink = r => "https://wa.me/?text="+encodeURIComponent(waText(r));
 let shareRep=null;
-function photoFiles(r){ return (r.fotos||[]).map((id,i)=>window.__blobs[id]?new File([window.__blobs[id]],`BC${r.referentie||""}_${r.datum}_${i+1}.jpg`,{type:window.__blobs[id].type||"image/jpeg"}):null).filter(Boolean); }
+function photoFiles(r){
+  const out=[], mk=(id,name)=>{ const b=window.__blobs[id]; if(b) out.push(new File([b],name,{type:b.type||"image/jpeg"})); };
+  (r.posten||[]).forEach((p,pi)=>(p.fotos||[]).forEach((id,i)=>mk(id,`BC${r.referentie||""}_${r.datum}_post${pi+1}_${(p.activiteit||"").replace(/\W+/g,"")}_${i+1}.jpg`)));
+  (r.fotos||[]).forEach((id,i)=>mk(id,`BC${r.referentie||""}_${r.datum}_algemeen_${i+1}.jpg`));
+  return out; }
 function canShareFiles(r){ try{ const f=photoFiles(r); return f.length && navigator.canShare && navigator.canShare({files:f}); }catch(e){ return false; } }
 async function shareWithPhotos(r, msgEl){
   try{ await navigator.share({text:waText(r), files:photoFiles(r)}); }
@@ -921,10 +991,10 @@ function applyLists(){
   const usedPosten=[...new Set(reports.flatMap(r=>(r.posten||[]).map(p=>p.post)).filter(Boolean))];
   set("#dl-werven",[...new Set([...(lists.werven||[]),...usedWerven])]);
   set("#dl-posten",[...new Set([...(lists.posten||[]),...usedPosten])]);
-  set("#dl-ploegbazen",lists.ploegbazen); set("#dl-lev",lists.leveranciers); set("#dl-prod",lists.producten); set("#dl-maat",lists.maatBoordstenen); set("#dl-trans",lists.transporteurs);
+  set("#dl-ploegbazen",lists.ploegbazen); set("#dl-lev",lists.leveranciers); set("#dl-prod",lists.producten); set("#dl-maat",lists.maatBoordstenen); set("#dl-goot",lists.typesGoten); set("#dl-trans",lists.transporteurs);
   set("#dl-tb",lists.typesBestrating); set("#dl-tk",lists.typesKabel); set("#dl-tbak",lists.typesBak); set("#dl-og",lists.opdrachtgevers); set("#dl-leid",lists.leidingen);
   renderOA();
-  document.querySelectorAll("#rows-post .p-uitvoerder").forEach(s=>{ s.innerHTML=uitvoerderOpts(s.value); });
+  { const s=$("#f-uitv"); if(s){ const v=s.value; s.innerHTML=uitvoerderOpts(v); s.value=v; } }
   document.querySelectorAll("#rows-mat .row").forEach(r=>{ const s=r.querySelector(".ps"), v=r.querySelector(".p").value; if(s) s.innerHTML=matOpts(v); });
   document.querySelectorAll("#rows-post .sel-tb").forEach(s=>{ s.innerHTML=tbOpts(s.value); });
   document.querySelectorAll("#rows-post .l-type").forEach(s=>{ s.innerHTML=leidOpts(s.value); });
@@ -959,7 +1029,7 @@ renderList();
   db.doc("config/lijsten").onSnapshot(s=>{ lists=s.exists?s.data():{}; applyLists(); }, ()=>{});
   db.collection("rapporten").orderBy("datum","desc").limit(1000).onSnapshot(s=>{
     reports=s.docs.map(d=>({id:d.id,...d.data()}));
-    window.__loadBlobs(reports.flatMap(r=>r.fotos||[])).then(()=>{ applyLists(); renderList(); });
+    window.__loadBlobs(reports.flatMap(allFotos)).then(()=>{ applyLists(); renderList(); });
   }, e=>{ $("#list").innerHTML=`<div class="empty">De rapporten konden niet geladen worden. Herlaad de pagina.</div>`; });
 })();
 })();
