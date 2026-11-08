@@ -473,7 +473,7 @@ function buildPost(r, d){
   r._fotos=(d.fotos||[]).map(id=>({id,url:window.__blobUrl(id)})); renderPostPhotos(r);
   r.querySelector(".pf").addEventListener("change",e=>{ const files=[...e.target.files]; e.target.value=""; const m=r.querySelector(".pf-msg"); m.hidden=true; addImages(files, r._fotos, ()=>renderPostPhotos(r), m); });
   renderParams(r, d);
-  r.querySelector(".a").addEventListener("change",()=>{ const keep=readPost(r); renderParams(r, keep); r.querySelector(".params input")?.focus(); });
+  r.querySelector(".a").addEventListener("change",()=>{ const prevKind=r.dataset.pk||"", keep=readPost(r), nextKind=kindOf(r.querySelector(".a").value); renderParams(r, prevKind===nextKind ? keep : {}); r.querySelector(".params input, .params select")?.focus(); });
   r.addEventListener("input",()=>updateCalc(r));
   $("#rows-post").append(r);
   return r;
