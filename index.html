@@ -94,13 +94,35 @@ textarea{min-height:96px;resize:vertical}
 .pv-zinfo{margin:6px 0 0;white-space:pre-line}
 .pv-cnt{font:600 .8rem var(--mono);color:var(--accent);margin-left:auto;white-space:nowrap}
 .pv-add{width:100%}
-.row.veh{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 36px;gap:8px;align-items:end}
-.row.veh label{min-width:0}
-.row.veh .vh-plaat{font:600 1.15rem var(--mono);text-transform:uppercase;letter-spacing:.06em}
-.row.veh .vh-wide{grid-column:1/3}
-.row.veh .x{grid-row:1;grid-column:3;align-self:start}
-.row.veh .photos{grid-column:1/-1}
-.row.veh .vh-nr{font:600 .75rem var(--mono);color:var(--muted)}
+.vt{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.vt-h,.vr-m{display:grid;grid-template-columns:22px minmax(0,1.3fr) minmax(0,1fr) 50px 40px;gap:4px;align-items:center;padding:0 4px}
+.vt-h{background:var(--sunk);font-size:.7rem;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--muted);min-height:30px}
+.vt-h span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:2px}
+.vt-h span:first-child,.vt-h span:last-child{text-align:center}
+.vr{border-top:1px solid var(--line)}
+.vr:nth-child(even){background:color-mix(in srgb,var(--sunk) 35%,transparent)}
+.vr-m{min-height:46px}
+.vr-m input,.vr-m select{height:38px;padding:0 5px;font-size:16px;min-width:0;width:100%;border-radius:6px}
+.vr-m .vh-plaat{font:600 16px var(--mono);text-transform:uppercase;letter-spacing:0}
+.vr-m .vh-plaat::placeholder{font-weight:400;opacity:.45}
+.vr-n{border:0;background:none;font:600 .8rem var(--mono);color:var(--muted);padding:0;height:38px;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+.vr.on .vr-n{color:var(--accent)}
+.vr-cam{display:grid;place-items:center;height:38px;border:1px dashed var(--line);border-radius:6px;cursor:pointer;position:relative;font-size:1.05rem;text-transform:none;letter-spacing:0}
+.vr-cam input{display:none}
+.vr-cam b{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:9px;background:var(--accent);color:var(--accent-ink);font:700 .68rem/18px var(--mono);text-align:center;padding:0 4px}
+.vr-cam b:empty{display:none}
+.vr-d{display:grid;gap:8px;padding:4px 8px 10px 32px}
+.vr-d[hidden]{display:none}
+.vr-ph{display:flex;gap:6px;flex-wrap:wrap}
+.vr-ph .ph{width:64px;height:64px;aspect-ratio:auto}
+.vr-ph .ph button{width:22px;height:22px;top:2px;right:2px;font-size:.8rem}
+.vr-dr{display:flex;gap:8px;align-items:center}
+.vr-dr input{flex:1;min-width:0;height:38px;font-size:16px}
+.vr-dr input.vh-uur{flex:0 0 96px;padding:0 4px}
+.vr-d{padding-left:30px}
+.pv-more{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.pv-more .btn{flex:0 0 auto}
+.pv-hint{font-size:.8rem;color:var(--muted);margin:0}
 .pv-actions{flex-wrap:wrap}
 .pv-actions .btn.primary{flex:1 1 100%}
 nav.tabs .tab-ico{flex:0 0 46px;font-size:1.15rem}
@@ -320,7 +342,7 @@ tr:last-child td{border-bottom:0}
         <div class="grid keep2">
           <label class="full">BC-nummer<input id="pv-bc" list="dl-werven" placeholder="BC-nummer" data-other="Nieuw BC-nummer…" autocomplete="off"></label>
           <label>Gemeente<select id="pv-gem"></select></label>
-          <label>Nr. vergunning<input id="pv-verg" autocomplete="off"></label>
+          <label>Nr. vergunning (Osiris)<input id="pv-verg" autocomplete="off" placeholder="komt van de werf"></label>
           <label class="full">Straat + huisnummers<input id="pv-straat" placeholder="bv. Avenue du Gibet t.h.v. nr. 20" autocomplete="off"></label>
           <label>Nr. verlenging<input id="pv-verl" autocomplete="off"></label>
           <label>Reden werf<input id="pv-reden" autocomplete="off"></label>
@@ -348,8 +370,11 @@ tr:last-child td{border-bottom:0}
       </fieldset>
       <fieldset>
         <legend><span class="n">4</span>Vastgestelde voertuigen <span class="pv-cnt" id="pv-cnt"></span></legend>
-        <button class="btn primary pv-add" type="button" id="pv-add">+ Voertuig toevoegen</button>
-        <div class="rows" id="pv-rows" style="margin-top:10px"></div>
+        <div class="vt">
+          <div class="vt-h" aria-hidden="true"><span>#</span><span>Nummerplaat</span><span>Merk</span><span>Huisnr</span><span>Foto</span></div>
+          <div id="pv-rows"></div>
+        </div>
+        <div class="pv-more"><button class="btn" type="button" id="pv-add">+ 5 lijnen</button><p class="pv-hint">Het uur wordt automatisch ingevuld. Tik op het nummer om het uur, een opmerking of de foto’s te zien, of om de lijn te wissen.</p></div>
         <p class="msg" id="pv-nihil">Geen voertuigen = «NIHIL» op het formulier.</p>
       </fieldset>
       <div class="actions pv-actions">
@@ -393,11 +418,11 @@ tr:last-child td{border-bottom:0}
 /* Offline opslag: rapporten en lijsten in localStorage, foto's in IndexedDB van dit toestel */
 (function(){
 const LS_R="wd-off-rapporten", LS_L="wd-off-lijsten", LS_N="wd-off-naam", LS_ID="wd-off-id";
-const DEFAULT_LISTS={"activiteiten": ["Graafwerk", "Herbestrating", "Plaatsen van bakken", "Leggen van leidingen", "Trekken van kabels", "Opkuisen van de werf", "Verhuizen naar andere werf"], "ploegbazen": ["Eric Hannes", "Cüneyt Teker", "Remzi Taslidere", "Celal Altincanak"], "onderaannemers": ["BKM Pavetech", "Cevik-Construct"], "werven": ["BC0010043 – Bosstraat Sint-Pieters-Woluwe", "BC0010045 – Neerstalsesteenweg Vorst", "BC0010117 – Rue du bon pasteur Sint-Jans-Molenbeek", "BC0010171 – Sterrenkundelaan Sint-Joost-ten-Node", "BC0010230 – Waterloosesteenweg - Rue Fernand Neuray Elsene", "BC0010241 – Steenweg op Waver Oudergem", "BC0010246 – Avenue de l'Université Elsene", "BC0010247 – Chaussée de Waterloo Elsene", "BC0010250 – Rue Maurice Elsene", "BC0010253 – Chaussée de Louvain", "BC0010260 – Rue des Quatre-Vents 147 Sint-Jans-Molenbeek", "BC0010263 – Rue de l'Aubespin Brussel 2", "BC0010268 – Avenue du Parc Sint-Gillis", "BC0010272 – Charles Michiels Oudergem", "BC0010273 – Waversesteenweg Cabine Oudergem", "BC0010276 – Avenue Emmanuel Mounier 8001 Sint-lambrechts Woluwe", "BC0010277 – Welriekendedreef Oudergem", "BC0010280 – Rue Kelle Sint-Pieters-Woluwe", "BC0010282 – Francois Couteauxstraat Jette", "BC0010283 – Edmond Machtenslaan Sint-Jans-Molenbeek", "BC0010284 – Rue Neerveld Sint-Lambrechts-Woluwe", "BC0010286 – Rue Portugal Sint-Gillis", "BC0010290 – Vervloesem Sint-Lambrechts-Woluwe", "BC0010292 – Alfred Dubois Sint-Jans-Molenbeek", "BC0010294 – Franz Guillaumelaan Evere", "BC0010295 – Rue Ribaucourt Sint-Jans-Molenbeek", "BC0010296 – Avenue E. Mounier Sint-Lambrechts-woluwe", "BC0010297 – Rue de l'Intendant Sint-Jans-Molenbeek", "BC0010299 – Hof ter Vleesdreef Anderlecht", "BC0010300 – Rue d'Idalie Elsene", "BC0010302 – Rue Juliette Wytsman Elsene", "BC0010303 – Rue de la prairie Sint-Joost-Ten-Node", "BC0010304 – Avenue Tervuren - Avenue de Putdael Sint-Pieters-Woluwe", "BC0010305 – Avenue de la Courone Elsene", "BC0010306 – Avenue du Dreby Elsene", "BC0010307 – Chaussée de Boondael Elsene", "BC0010308 – Rue VanderBorght Jette", "BC0010309 – Lauriers Roses Clos Evere", "BC0010310 – Avenue Leonard Mommaerts Evere", "BC0010311 – Chaussée d'Anvers Brussel", "BC0010315 – Rue Emile Idiers Oudergem", "BC0010316 – Rue Emile Ferron Sint-Gillis", "BC0010317 – Avenue Adolphe Buyle Elsene", "BC0010318 – Industrie Quai Sint-Jans-Molenbeek", "BC0010320 – Rbre Unique Evere", "BC0010321 – Avenue Jaak Pieter Balings Jette", "BC0010322 – Rue Gray Elsene", "BC0010323 – Avenue Paul Vanden Thoren Oudergem", "BC0010324 – Bonaventure Jette"], "typesBestrating": ["Dallen", "Klinkers", "Platines", "Plaatstenen", "Kasseien", "Blauwe steen", "Mozaïek", "Beton", "Asfalt", "Asfalt gekleurd", "Dolomiet", "Gestabiliseerde dolomiet", "Sintel / grint", "Grasperk", "Volle grond", "Boordstenen"], "maatBoordstenen": ["Beton", "Blauwe steen"], "typesGoten": [], "leidingen": ["LS", "HS", "EP", "FOP", "DB7", "DB6", "SRV 7x12+2x10", "HDPE-50mm", "Waterleiding", "Gasleiding"], "typesKabel": ["6003 · LS handgetrokken", "6030 · LS mechanisch getrokken", "6011 · HS ≤ 3x185 handgetrokken", "6020 · HS 3x PRC ≤ 95 handgetrokken", "6021 · HS 3x PRC > 95 handgetrokken", "6032 · HS PRC mechanisch getrokken", "6101 · LS buiten sleuf", "6102 · HS buiten sleuf", "6061 · F.O. speedpipes bundel"], "typesBak": ["Koppelput", "Trekput"], "opdrachtgevers": ["Sibelga", "Proximus", "Wyre", "VOO", "Vivaqua", "Gewest Brussel (REG.BXL)", "Irisnet", "STIB / MIVB", "DIGI", "Orange (Mobistar)"], "producten": ["Zand", "Wit zand", "Gestabiliseerd zand", "Kunstmatig zand", "Stabilisé", "Mager beton", "Beton", "Steenslag / grind", "Dolomiet", "Teelaarde", "Zwarte grond", "Dallen 30x30x6", "Klinkers", "Plaatstenen", "Kasseien", "Blauwe steen", "Boordstenen beton", "Flowjoint", "Noppenfolie", "Groene geribde buis Ø63", "Rode geribde buis Ø140", "Wachtbuis Ø63", "Wachtbuis Ø140", "Kabelbeschermer 220 mm"], "posten": ["6001 · Plaatsen wachtbuizen", "6040 · Kabelbescherming", "6060 · F.O. HDPE 50", "5003 · PE gas Ø63", "5004 · PE gas Ø110", "5005 · PE gas Ø160", "5006 · PE gas Ø200", "5122 · PE beschermplaten", "1222 · Muurdoorboring + waterdicht herstel", "1312 · Boring type 1 Ø110–200", "4709 · Verplaatsing werfinstallatie"]};
+const DEFAULT_LISTS={"activiteiten": ["Graafwerk", "Herbestrating", "Plaatsen van bakken", "Leggen van leidingen", "Trekken van kabels", "Opkuisen van de werf", "Verhuizen naar andere werf"], "ploegbazen": ["Eric Hannes", "Cüneyt Teker", "Remzi Taslidere", "Celal Altincanak"], "onderaannemers": ["BKM Pavetech", "Cevik-Construct"], "werven": ["BC0010043 – Bosstraat Sint-Pieters-Woluwe", "BC0010045 – Neerstalsesteenweg Vorst", "BC0010117 – Rue du bon pasteur Sint-Jans-Molenbeek", "BC0010171 – Sterrenkundelaan Sint-Joost-ten-Node", "BC0010230 – Waterloosesteenweg - Rue Fernand Neuray Elsene", "BC0010241 – Steenweg op Waver Oudergem", "BC0010246 – Avenue de l'Université Elsene", "BC0010247 – Chaussée de Waterloo Elsene", "BC0010250 – Rue Maurice Elsene", "BC0010253 – Chaussée de Louvain", "BC0010260 – Rue des Quatre-Vents 147 Sint-Jans-Molenbeek", "BC0010263 – Rue de l'Aubespin Brussel 2", "BC0010268 – Avenue du Parc Sint-Gillis", "BC0010270 – Deknoop Evere", "BC0010272 – Charles Michiels Oudergem", "BC0010273 – Waversesteenweg Cabine Oudergem", "BC0010276 – Avenue Emmanuel Mounier 8001 Sint-lambrechts Woluwe", "BC0010277 – Welriekendedreef Oudergem", "BC0010280 – Rue Kelle Sint-Pieters-Woluwe", "BC0010282 – Francois Couteauxstraat Jette", "BC0010283 – Edmond Machtenslaan Sint-Jans-Molenbeek", "BC0010284 – Rue Neerveld Sint-Lambrechts-Woluwe", "BC0010286 – Rue Portugal Sint-Gillis", "BC0010290 – Vervloesem Sint-Lambrechts-Woluwe", "BC0010292 – Alfred Dubois Sint-Jans-Molenbeek", "BC0010294 – Franz Guillaumelaan Evere", "BC0010295 – Rue Ribaucourt Sint-Jans-Molenbeek", "BC0010296 – Avenue E. Mounier Sint-Lambrechts-woluwe", "BC0010297 – Rue de l'Intendant Sint-Jans-Molenbeek", "BC0010299 – Hof ter Vleesdreef Anderlecht", "BC0010300 – Rue d'Idalie Elsene", "BC0010302 – Rue Juliette Wytsman Elsene", "BC0010303 – Rue de la prairie Sint-Joost-Ten-Node", "BC0010304 – Avenue Tervuren - Avenue de Putdael Sint-Pieters-Woluwe", "BC0010305 – Avenue de la Courone Elsene", "BC0010306 – Avenue du Dreby Elsene", "BC0010307 – Chaussée de Boondael Elsene", "BC0010308 – Rue VanderBorght Jette", "BC0010309 – Lauriers Roses Clos Evere", "BC0010310 – Avenue Leonard Mommaerts Evere", "BC0010311 – Chaussée d'Anvers Brussel", "BC0010312 – Chaussée de Wavre Oudergem", "BC0010313 – Rue Jourdan Sint-Gillis", "BC0010314 – Avenue de L'Hippodrome Elsene", "BC0010315 – Rue Emile Idiers Oudergem", "BC0010316 – Rue Emile Ferron Sint-Gillis", "BC0010317 – Avenue Adolphe Buyle Elsene", "BC0010318 – Industrie Quai Sint-Jans-Molenbeek", "BC0010319 – Edmond de Grimberghe Sint-Jans-Molenbeek", "BC0010320 – Rbre Unique Evere", "BC0010321 – Avenue Jaak Pieter Balings Jette", "BC0010322 – Rue Gray Elsene", "BC0010323 – Avenue Paul Vanden Thoren Oudergem", "BC0010324 – Bonaventure Jette"], "typesBestrating": ["Dallen", "Klinkers", "Platines", "Plaatstenen", "Kasseien", "Blauwe steen", "Mozaïek", "Beton", "Asfalt", "Asfalt gekleurd", "Dolomiet", "Gestabiliseerde dolomiet", "Sintel / grint", "Grasperk", "Volle grond", "Boordstenen"], "maatBoordstenen": ["Beton", "Blauwe steen"], "typesGoten": [], "leidingen": ["LS", "HS", "EP", "FOP", "DB7", "DB6", "SRV 7x12+2x10", "HDPE-50mm", "Waterleiding", "Gasleiding"], "typesKabel": ["6003 · LS handgetrokken", "6030 · LS mechanisch getrokken", "6011 · HS ≤ 3x185 handgetrokken", "6020 · HS 3x PRC ≤ 95 handgetrokken", "6021 · HS 3x PRC > 95 handgetrokken", "6032 · HS PRC mechanisch getrokken", "6101 · LS buiten sleuf", "6102 · HS buiten sleuf", "6061 · F.O. speedpipes bundel"], "typesBak": ["Koppelput", "Trekput"], "opdrachtgevers": ["Sibelga", "Proximus", "Wyre", "VOO", "Vivaqua", "Gewest Brussel (REG.BXL)", "Irisnet", "STIB / MIVB", "DIGI", "Orange (Mobistar)"], "producten": ["Zand", "Wit zand", "Gestabiliseerd zand", "Kunstmatig zand", "Stabilisé", "Mager beton", "Beton", "Steenslag / grind", "Dolomiet", "Teelaarde", "Zwarte grond", "Dallen 30x30x6", "Klinkers", "Plaatstenen", "Kasseien", "Blauwe steen", "Boordstenen beton", "Flowjoint", "Noppenfolie", "Groene geribde buis Ø63", "Rode geribde buis Ø140", "Wachtbuis Ø63", "Wachtbuis Ø140", "Kabelbeschermer 220 mm"], "posten": ["6001 · Plaatsen wachtbuizen", "6040 · Kabelbescherming", "6060 · F.O. HDPE 50", "5003 · PE gas Ø63", "5004 · PE gas Ø110", "5005 · PE gas Ø160", "5006 · PE gas Ø200", "5122 · PE beschermplaten", "1222 · Muurdoorboring + waterdicht herstel", "1312 · Boring type 1 Ø110–200", "4709 · Verplaatsing werfinstallatie"]};
 const rd=(k,d)=>{ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } };
 const wr=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){ throw {code:"quota_exceeded"}; } };
 let reps=rd(LS_R,{}), lijsten=rd(LS_L,null)||DEFAULT_LISTS;
-try{ if(localStorage.getItem("wd-off-mig")!=="3"){ Object.entries(DEFAULT_LISTS).forEach(([k,arr])=>{ const cur=Array.isArray(lijsten[k])?lijsten[k]:[]; const key=x=>String(x).split(" – ")[0].trim(); const dm=new Map(arr.map(x=>[key(x),x])); const upd=cur.map(x=>{ const d=dm.get(key(x)); return d && String(d).length>String(x).length ? d : x; }); const have=new Set(upd.map(key)); lijsten[k]=[...upd, ...arr.filter(x=>!have.has(key(x)))]; }); localStorage.setItem(LS_L,JSON.stringify(lijsten)); localStorage.setItem("wd-off-mig","3"); } }catch(e){}
+try{ if(localStorage.getItem("wd-off-mig")!=="4"){ Object.entries(DEFAULT_LISTS).forEach(([k,arr])=>{ const cur=Array.isArray(lijsten[k])?lijsten[k]:[]; const key=x=>String(x).split(" – ")[0].trim(); const dm=new Map(arr.map(x=>[key(x),x])); const upd=cur.map(x=>{ const d=dm.get(key(x)); return d && String(d).length>String(x).length ? d : x; }); const have=new Set(upd.map(key)); lijsten[k]=[...upd, ...arr.filter(x=>!have.has(key(x)))]; }); localStorage.setItem(LS_L,JSON.stringify(lijsten)); localStorage.setItem("wd-off-mig","4"); } }catch(e){}
 let devId=null; try{ devId=localStorage.getItem(LS_ID); if(!devId){ devId="t"+Date.now().toString(36)+Math.random().toString(36).slice(2,7); localStorage.setItem(LS_ID,devId); } }catch(e){ devId="t-tijdelijk"; }
 const listeners=[]; const fire=()=>listeners.forEach(f=>f());
 const snap=(id,data)=>({id,exists:data!=null,data:()=>data,metadata:{fromCache:false,hasPendingWrites:false}});
@@ -1092,6 +1117,9 @@ const lsGet=(k,d)=>{ try{ const v=localStorage.getItem(k); return v==null?d:v; }
 const lsSet=(k,v)=>{ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } };
 let PV={}; try{ PV=JSON.parse(lsGet(LS_PV,"{}"))||{}; }catch(e){ PV={}; }
 let pvId=null;
+const PV_OSIRIS={"BC0010003":"218311","BC0010006":"224086","BC0010007":"228772, 228773","BC0010008":"231764 - 231768","BC0010010":"232762","BC0010011":"153405","BC0010012":"213408-213409-251697","BC0010013":"298208","BC0010019":"82882","BC0010032":"253568","BC0010038":"344604","BC0010040":"308105","BC0010041":"227415","BC0010042":"148966-246873","BC0010045":"150251","BC0010052":"213799","BC0010053":"249965","BC0010054":"257206","BC0010055":"228772, 228773","BC0010058":"148966-246873","BC0010059":"257674","BC0010060":"213799","BC0010061":"248826","BC0010062":"227581","BC0010063":"242910","BC0010064":"281021.259598","BC0010065":"253568","BC0010067":"295837","BC0010075":"283462","BC0010076":"284326","BC0010077":"283493.283495","BC0010079":"235135","BC0010080":"186141","BC0010082":"202068","BC0010083":"299162","BC0010091":"235135","BC0010094":"290658","BC0010096":"303291","BC0010097":"285291","BC0010098":"280160","BC0010100":"292643","BC0010102":"278522","BC0010107":"336055","BC0010108":"328145","BC0010110":"168670","BC0010111":"294141","BC0010112":"314037","BC0010117":"301840","BC0010119":"298208","BC0010122":"240371","BC0010135":"318300","BC0010143":"259762","BC0010144":"309045","BC0010151":"316125","BC0010153":"329284","BC0010155":"326330","BC0010156":"308105","BC0010158":"323484","BC0010159":"315172","BC0010160":"361223","BC0010161":"438977","BC0010162":"174785","BC0010163":"348384","BC0010164":"307891","BC0010165":"345563","BC0010166":"348371","BC0010167":"315796","BC0010168":"301959","BC0010169":"371998","BC0010170":"340038","BC0010171":"370562","BC0010172":"376848","BC0010187":"360988","BC0010188":"335637","BC0010189":"368737","BC0010191":"348141","BC0010192":"351506","BC0010193":"350144","BC0010194":"365215","BC0010195":"283464","BC0010196":"365711","BC0010197":"278982","BC0010198":"416189","BC0010199":"385782","BC0010200":"428230","BC0010201":"417513","BC0010202":"351271","BC0010203":"400160","BC0010204":"291988","BC0010205":"426764","BC0010206":"371027","BC0010207":"284193","BC0010208":"405277 / 405279","BC0010209":"403805","BC0010210":"399302 / 399298","BC0010211":"420542","BC0010212":"398845","BC0010213":"363497","BC0010214":"374521","BC0010216":"348904","BC0010218":"420991","BC0010221":"390695 / 370963","BC0010222":"319674","BC0010223":"416095","BC0010224":"278099","BC0010226":"440871","BC0010227":"438702","BC0010228":"412308","BC0010229":"441317","BC0010230":"442472","BC0010231":"385782","BC0010232":"425123","BC0010233":"437520","BC0010235":"456591","BC0010237":"404904, 409261","BC0010238":"419456-475409","BC0010239":"387521 / 387526","BC0010240":"400335","BC0010241":"422904","BC0010242":"285033","BC0010244":"463756","BC0010245":"341925","BC0010246":"504515","BC0010247":"467885","BC0010250":"453638","BC0010251":"477978","BC0010252":"467372","BC0010253":"435278","BC0010254":"473644","BC0010255":"520469","BC0010258":"543169","BC0010260":"523069 / 523117","BC0010261":"407015","BC0010262":"451697","BC0010263":"441275","BC0010268":"517189","BC0010270":"489304","BC0010272":"557261","BC0010274":"648716","BC0010275":"593838","BC0010277":"549218","BC0010279":"610487","BC0010280":"449305","BC0010281":"605135","BC0010282":"424825","BC0010283":"641142","BC0010284":"573268","BC0010285":"646804","BC0010286":"667425","BC0010288":"707948","BC0010290":"627564","BC0010292":"634205","BC0010293":"373686","BC0010294":"628333 / 691125","BC0010295":"669532","BC0010296":"691452","BC0010297":"664757 / 359088","BC0010299":"608692","BC0010300":"682777","BC0010302":"454809","BC0010303":"667530 - 580399","BC0010304":"687828 - 696696","BC0010305":"732359","BC0010306":"802073","BC0010307":"574651","BC0010308":"576903","BC0010309":"628349","BC0010310":"677395","BC0010311":"754530","BC0010315":"695212","BC0010316":"716593-787910-794460","BC0010318":"584970","BC0010321":"606642","BC0010322":"824171","BC0010323":"820750","BC0010324":"813250 - 813067"};
+const LS_VERG="wd-off-verg"; const vergMem=()=>{ try{ return JSON.parse(localStorage.getItem(LS_VERG)||"{}"); }catch(e){ return {}; } };
+const vergVoor=bc=>{ bc=String(bc||"").trim().toUpperCase(); return vergMem()[bc] || PV_OSIRIS[bc] || ""; };
 const nowHM=()=>{ const d=new Date(); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); };
 const normN=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z]/g,"");
 const zoneVoor=g=>{ const n=normN(g); return (PVD.zones.find(z=>z.gemeenten.some(x=>normN(x)===n))||{}).naam||""; };
@@ -1108,7 +1136,7 @@ const PVF=[["bc","pv-bc"],["gemeente","pv-gem"],["straat","pv-straat"],["verg","
 function pvRead(){
   const p=PV[pvId]; if(!p) return null;
   PVF.forEach(([k,id])=>{ const el=document.getElementById(id); if(el) p[k]=el.value.trim(); });
-  p.voertuigen=[...document.querySelectorAll("#pv-rows .row.veh")].map(r=>({ plaat:r.querySelector(".vh-plaat").value.trim().toUpperCase(), merk:r.querySelector(".vh-merk").value.trim(), huisnr:r.querySelector(".vh-huis").value.trim(), uur:r.querySelector(".vh-uur").value, opm:r.querySelector(".vh-opm").value.trim(), fotos:(r._fotos||[]).filter(f=>f.id).map(f=>f.id) }));
+  p.voertuigen=[...document.querySelectorAll("#pv-rows .vr")].filter(vrFilled).map(r=>({ plaat:r.querySelector(".vh-plaat").value.trim().toUpperCase(), merk:r.querySelector(".vh-merk").value.trim(), huisnr:r.querySelector(".vh-huis").value.trim(), uur:r.querySelector(".vh-uur").value, opm:r.querySelector(".vh-opm").value.trim(), fotos:(r._fotos||[]).filter(f=>f.id).map(f=>f.id) }));
   return p;
 }
 let pvT=null;
@@ -1122,45 +1150,80 @@ function pvZoneInfo(){
   $("#pv-zinfo").textContent = z ? [z.mail+(z.mail2?" + "+z.mail2:""), [z.tel?"Tel "+z.tel:"",z.fax?"Fax "+z.fax:""].filter(Boolean).join(" · "), z.let].filter(Boolean).join("\n")
     : ($("#pv-gem").value ? "Voor deze gemeente staat geen politiezone in de lijst. Kies de zone zelf of vul ze aan in de Excel (blad Zones)." : "");
 }
-function pvCount(){ const n=document.querySelectorAll("#pv-rows .row.veh").length; $("#pv-cnt").textContent=n?n+" / 25":""; $("#pv-nihil").hidden=!!n; $("#pv-add").disabled=n>=25;
-  $("#pv-fotos").hidden=!document.querySelectorAll("#pv-rows .row.veh .ph img").length; }
-function vehRow(v={}, top=false){
-  const r=document.createElement("div"); r.className="row veh";
-  r.innerHTML=`<label>Nummerplaat<input class="vh-plaat" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="1-ABC-234" value="${esc(v.plaat||"")}"></label>
-    <label>Merk<select class="vh-merk"><option value="">Kies merk…</option>${PVD.merken.map(m=>`<option${m===v.merk?" selected":""}>${esc(m)}</option>`).join("")}${v.merk&&!PVD.merken.includes(v.merk)?`<option selected>${esc(v.merk)}</option>`:""}<option value="Andere">Andere</option></select></label>
-    <label>Huisnr. (t.h.v.)<input class="vh-huis" inputmode="text" autocomplete="off" value="${esc(v.huisnr||"")}"></label>
-    <label>Uur<input type="time" class="vh-uur" value="${esc(v.uur||nowHM())}"></label>
-    <label class="vh-wide">Opmerking<input class="vh-opm" autocomplete="off" placeholder="bv. voor inrit, overkant" value="${esc(v.opm||"")}"></label>
-    <div class="photos post-photos"><label class="camera">📷 Foto<input type="file" class="pf" accept="image/*" multiple></label></div>`;
-  const x=document.createElement("button"); x.type="button"; x.className="x"; x.textContent="×"; x.setAttribute("aria-label","Voertuig verwijderen");
-  let armed=false; x.onclick=()=>{ if(!armed){ armed=true; x.textContent="?"; x.title="Nog eens tikken om te verwijderen"; setTimeout(()=>{ armed=false; x.textContent="×"; },2500); return; } r.remove(); pvSaveSoon(); };
-  r.append(x);
-  r._fotos=(v.fotos||[]).map(id=>({id,url:window.__blobUrl(id)})); renderPostPhotos(r);
-  r.querySelector(".pf").addEventListener("change",e=>{ const files=[...e.target.files]; e.target.value=""; addImages(files, r._fotos, ()=>{ renderPostPhotos(r); pvCount(); }, $("#pv-msg")).then(pvSaveSoon); });
-  const box=$("#pv-rows"); if(top) box.prepend(r); else box.append(r);
+function pvCount(){ const n=[...document.querySelectorAll("#pv-rows .vr")].filter(vrFilled).length; $("#pv-cnt").textContent=n?n+(n===1?" wagen":" wagens"):""; $("#pv-nihil").hidden=!!n;
+  $("#pv-fotos").hidden=!document.querySelectorAll("#pv-rows .vr-ph img").length; }
+function vehRow(v={}){
+  const r=document.createElement("div"); r.className="vr";
+  const merkOpt=`<option value=""></option>${PVD.merken.map(m=>`<option${m===v.merk?" selected":""}>${esc(m)}</option>`).join("")}${v.merk&&!PVD.merken.includes(v.merk)&&v.merk!=="Andere"?`<option selected>${esc(v.merk)}</option>`:""}<option${v.merk==="Andere"?" selected":""}>Andere</option>`;
+  r.innerHTML=`<div class="vr-m">
+      <button type="button" class="vr-n" aria-label="Details van deze lijn"></button>
+      <input class="vh-plaat" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="1-ABC-234" aria-label="Nummerplaat" value="${esc(v.plaat||"")}">
+      <select class="vh-merk" aria-label="Merk">${merkOpt}</select>
+      <input class="vh-huis" inputmode="numeric" autocomplete="off" aria-label="Huisnummer" value="${esc(v.huisnr||"")}">
+      <label class="vr-cam" aria-label="Foto nemen">📷<b></b><input type="file" class="pf" accept="image/*" multiple></label>
+    </div>
+    <div class="vr-d" hidden>
+      <div class="vr-dr"><input type="time" class="vh-uur" aria-label="Uur" title="Uur vastgesteld" value="${esc(v.uur||"")}"><input class="vh-opm" autocomplete="off" placeholder="Opmerking" value="${esc(v.opm||"")}"><button type="button" class="btn small danger vr-del">Wissen</button></div>
+      <div class="vr-ph"></div>
+    </div>`;
+  r._fotos=(v.fotos||[]).map(id=>({id,url:window.__blobUrl(id)}));
+  const d=r.querySelector(".vr-d");
+  const open=on=>{ d.hidden=!on; r.classList.toggle("on",on); };
+  r.querySelector(".vr-n").onclick=()=>open(d.hidden);
+  if(v.opm || r._fotos.length) open(true);
+  r.querySelector(".vh-plaat").addEventListener("input",e=>{ const u=r.querySelector(".vh-uur"); if(e.target.value.trim() && !u.value) u.value=nowHM(); pvEnsureEmpty(); });
+  const del=r.querySelector(".vr-del"); let armed=false;
+  del.onclick=()=>{ if(!armed){ armed=true; del.textContent="Zeker?"; setTimeout(()=>{ armed=false; del.textContent="Wissen"; },2500); return; }
+    r.remove(); pvNumber(); pvEnsureEmpty(); pvSaveSoon(); };
+  r.querySelector(".pf").addEventListener("change",e=>{ const files=[...e.target.files]; e.target.value=""; open(true);
+    if(!r.querySelector(".vh-uur").value) r.querySelector(".vh-uur").value=nowHM();
+    addImages(files, r._fotos, ()=>{ pvPh(r); pvCount(); }, $("#pv-msg")).then(()=>{ pvPh(r); pvSaveSoon(); }); });
+  $("#pv-rows").append(r); pvPh(r);
   return r;
 }
+function pvPh(r){
+  const box=r.querySelector(".vr-ph"); box.innerHTML=""; const list=r._fotos||[];
+  list.forEach((p,i)=>{ const d=document.createElement("div"); d.className="ph"+(p.id?"":" busy"); const url=p.url||window.__blobUrl(p.id||"");
+    if(url){ const im=document.createElement("img"); im.src=url; im.alt="Foto voertuig"; d.append(im); }
+    if(p.id){ const b=document.createElement("button"); b.type="button"; b.textContent="×"; b.setAttribute("aria-label","Foto weghalen"); b.onclick=()=>{ list.splice(i,1); pvPh(r); pvSaveSoon(); }; d.append(b); }
+    box.append(d); });
+  r.querySelector(".vr-cam b").textContent=list.length||"";
+}
+const vrFilled=r=>!!(r.querySelector(".vh-plaat").value.trim()||r.querySelector(".vh-merk").value||r.querySelector(".vh-huis").value.trim()||r.querySelector(".vh-opm").value.trim()||(r._fotos||[]).length);
+function pvNumber(){ document.querySelectorAll("#pv-rows .vr").forEach((r,i)=>r.querySelector(".vr-n").textContent=i+1); }
+function pvEnsureEmpty(){ // er staat altijd minstens één lege lijn klaar onderaan
+  const rows=[...document.querySelectorAll("#pv-rows .vr")]; const last=rows[rows.length-1];
+  if(!last || vrFilled(last)){ vehRow({}); pvNumber(); }
+}
+
 function pvRender(){
   const p=PV[pvId]; if(!p) return;
   $("#pv-gem").innerHTML=`<option value="">Kies gemeente…</option>`+PV_GEM.map(g=>`<option${g===p.gemeente?" selected":""}>${esc(g)}</option>`).join("");
   $("#pv-zone").innerHTML=`<option value="">Kies politiezone…</option>`+PVD.zones.map(z=>`<option${z.naam===p.zone?" selected":""}>${esc(z.naam)}</option>`).join("");
   PVF.forEach(([k,id])=>{ const el=document.getElementById(id); if(el && el.tagName!=="SELECT") el.value=p[k]||""; else if(el) el.value=p[k]||el.value; });
-  $("#pv-rows").innerHTML=""; p.voertuigen.forEach(v=>vehRow(v));
+  $("#pv-rows").innerHTML=""; p.voertuigen.forEach(v=>vehRow(v)); for(let i=p.voertuigen.length;i<Math.max(10,p.voertuigen.length+1);i++) vehRow({}); pvNumber();
   const w=$("#pv-bc").closest(".combo"); if(w) w.dataset.ander=""; upgradeCombos(); refreshCombos();
-  window.__loadBlobs && window.__loadBlobs(p.voertuigen.flatMap(v=>v.fotos||[])).then(()=>document.querySelectorAll("#pv-rows .row.veh").forEach(renderPostPhotos));
+  window.__loadBlobs && window.__loadBlobs(p.voertuigen.flatMap(v=>v.fotos||[])).then(()=>document.querySelectorAll("#pv-rows .vr").forEach(r=>{ (r._fotos||[]).forEach(f=>{ if(!f.url) f.url=window.__blobUrl(f.id); }); pvPh(r); }));
+  pvLastBc=$("#pv-bc").value.trim(); if(!$("#pv-verg").value && pvLastBc) $("#pv-verg").value=vergVoor(pvLastBc);
   pvZoneInfo(); pvList(); pvCount(); $("#pv-msg").textContent="";
 }
 $("#pvform").addEventListener("input",pvSaveSoon); $("#pvform").addEventListener("change",pvSaveSoon);
 $("#pvform").addEventListener("submit",e=>e.preventDefault());
 $("#pv-gem").addEventListener("change",()=>{ const z=zoneVoor($("#pv-gem").value); if(z) $("#pv-zone").value=z; pvZoneInfo(); });
 $("#pv-zone").addEventListener("change",pvZoneInfo);
-$("#pv-bc").addEventListener("input",()=>{ // straat en gemeente overnemen uit "BC… – straat gemeente"
-  const v=$("#pv-bc").value.trim(); const full=[...document.getElementById("dl-werven").options].map(o=>o.value).find(x=>cVal(x)===v&&x.includes(" – ")); if(!full) return;
+let pvLastBc=null;
+$("#pv-bc").addEventListener("input",()=>{ // vergunning, straat en gemeente overnemen van de werf
+  const v=$("#pv-bc").value.trim(); if(v===pvLastBc) return; const nieuw=pvLastBc!==null; pvLastBc=v;
+  const vg=vergVoor(v); if(vg || nieuw) $("#pv-verg").value=vg;
+  const full=[...document.getElementById("dl-werven").options].map(o=>o.value).find(x=>cVal(x)===v&&x.includes(" – ")); if(!full) return;
   let rest=full.split(" – ").slice(1).join(" – ").trim(); const g=PV_GEM.slice().sort((a,b)=>b.length-a.length).find(g=>normN(rest).endsWith(normN(g)));
-  if(g){ rest=rest.slice(0, rest.toLowerCase().lastIndexOf(g.split(/[ -]/)[0].toLowerCase())).trim(); if(!$("#pv-gem").value){ $("#pv-gem").value=g; $("#pv-gem").dispatchEvent(new Event("change",{bubbles:true})); } }
-  if(!$("#pv-straat").value) $("#pv-straat").value=rest;
+  if(g){ rest=rest.slice(0, rest.toLowerCase().lastIndexOf(g.split(/[ -]/)[0].toLowerCase())).trim(); if(nieuw || !$("#pv-gem").value){ $("#pv-gem").value=g; $("#pv-gem").dispatchEvent(new Event("change",{bubbles:true})); } }
+  if(nieuw || !$("#pv-straat").value) $("#pv-straat").value=rest;
 });
-$("#pv-add").onclick=()=>{ const r=vehRow({},true); r.querySelector(".vh-plaat").focus(); pvSaveSoon(); };
+$("#pv-verg").addEventListener("change",()=>{ const bc=$("#pv-bc").value.trim().toUpperCase(); if(!bc) return; const m=vergMem(); const v=$("#pv-verg").value.trim();
+  if(v && v!==PV_OSIRIS[bc]) m[bc]=v; else delete m[bc]; try{ localStorage.setItem(LS_VERG,JSON.stringify(m)); }catch(e){} });
+
+$("#pv-add").onclick=()=>{ const first=[...document.querySelectorAll("#pv-rows .vr")].find(r=>!vrFilled(r)); for(let i=0;i<5;i++) vehRow({}); pvNumber(); (first||document.querySelector("#pv-rows .vr:last-child")).scrollIntoView({block:"center"}); };
 $("#pv-nieuw").onclick=()=>{ pvRead(); pvStore(); pvNew(); window.scrollTo({top:0}); };
 $("#pv-kies").onchange=()=>{ pvRead(); pvStore(); pvId=$("#pv-kies").value; pvRender(); };
 $("#pv-del").onclick=()=>{ const b=$("#pv-del"); if(b.dataset.arm!=="1"){ b.dataset.arm="1"; b.textContent="Zeker verwijderen?"; setTimeout(()=>{ b.dataset.arm=""; b.textContent="Verwijderen"; },3000); return; }
@@ -1201,24 +1264,40 @@ function setCells(xml, vals){
 }
 function pvMelder(){ return {naam:myName||"", tel:lsGet(LS_TEL,""), mail:lsGet(LS_MAIL,"")}; }
 function pvOnderwerp(p){ return `Parkeerverbod ${p.gemeente} — ${p.straat} — plaatsing ${fdmy(p.pdat)} (geldig ${fdmy(p.van)} t.e.m. ${fdmy(p.tot)})`; }
+function pvGrow(xml,N){ // N extra voertuiglijnen invoegen na rij 53
+  if(N<=0) return xml; const sh=r=>r>=54?r+N:r;
+  xml=xml.replace(/<row r="(\d+)"/g,(a,r)=>`<row r="${sh(+r)}"`).replace(/<c r="([A-Z]+)(\d+)"/g,(a,c,r)=>`<c r="${c}${sh(+r)}"`)
+    .replace(/<mergeCell ref="([A-Z]+)(\d+):([A-Z]+)(\d+)"\/>/g,(a,c1,r1,c2,r2)=>`<mergeCell ref="${c1}${sh(+r1)}:${c2}${sh(+r2)}"/>`);
+  let rows="", mg="";
+  for(let i=0;i<N;i++){ const r=54+i; rows+=`<row r="${r}" spans="1:7" ht="15.75" customHeight="1" x14ac:dyDescent="0.3"><c r="A${r}" s="9"><v>${26+i}</v></c><c r="B${r}" s="6"/><c r="C${r}" s="5"/><c r="D${r}" s="3"/><c r="E${r}" s="10"/><c r="F${r}" s="52"/><c r="G${r}" s="52"/></row>`; mg+=`<mergeCell ref="F${r}:G${r}"/>`; }
+  xml=xml.replace(/(<row r="53"[^>]*>[\s\S]*?<\/row>)/,"$1"+rows)
+    .replace(/<mergeCells count="(\d+)">/,(a,n)=>`<mergeCells count="${+n+N}">`).replace("</mergeCells>",mg+"</mergeCells>")
+    .replace(/<dimension ref="A1:G(\d+)"\/>/,(a,n)=>`<dimension ref="A1:G${+n+N}"/>`)
+    .replace('sqref="D29:D53"',`sqref="D29:D${53+N}"`)
+    .replace(/<pageSetup /,'<pageSetup fitToHeight="0" ');
+  return xml;
+}
 function pvXlsx(p){
   const z=PVD.zones.find(x=>x.naam===p.zone)||{}; const m=pvMelder(); const V=p.voertuigen.filter(v=>v.plaat||v.merk||v.huisnr).slice().sort((a,b)=>(a.uur||'').localeCompare(b.uur||''));
+  const N=Math.max(0,V.length-25);
   const vals={ B5:p.zone||"", F5:xlDate(iso(new Date())), B6:z.mail||"— zone selecteren —", B7:[z.mail2||"", z.tel?"Tel: "+z.tel:"", z.fax?"Fax: "+z.fax:""].filter(Boolean).join("   |   "), B8:z.let||"",
     E11:m.naam, E12:m.tel, B13:m.mail, E13:myName||"", B16:p.gemeente, E16:p.reden, B17:p.straat, B18:p.verg, E18:p.verl, G18:p.bc,
     A22:xlDate(p.pdat), B22:xlTime(p.puur), C22:p.type, D22:num(p.borden), E22:num(p.lengte), F22:p.sopm,
     A24:xlDate(p.van), B24:xlDate(p.tot), C24:xlTime(p.uvan), E24:xlTime(p.utot), F24:(xlDate(p.van)!=null&&xlDate(p.tot)!=null)?xlDate(p.tot)-xlDate(p.van)+1:"",
     A27: V.length?`Aantal vastgestelde voertuigen / Nombre de véhicules constatés : ${V.length}`:"NIHIL — geen voertuigen aanwezig op het ogenblik van de plaatsing / Pas de véhicules sur place au moment de la pose",
-    B56:m.naam, E56:xlDate(iso(new Date())), B58:pvOnderwerp(p) };
-  for(let i=0;i<25;i++){ const r=29+i, v=V[i]||{}; const h=v.huisnr; vals["B"+r]= h==null||h===""?"":(/^\d+$/.test(h)?Number(h):h); vals["C"+r]=v.plaat?xlTime(v.uur):""; vals["D"+r]=v.merk||""; vals["E"+r]=v.plaat||""; vals["F"+r]=v.opm||""; }
+    ["B"+(56+N)]:m.naam, ["E"+(56+N)]:xlDate(iso(new Date())), ["B"+(58+N)]:pvOnderwerp(p) };
+  for(let i=0;i<25+N;i++){ const r=29+i, v=V[i]||{}; const h=v.huisnr; vals["B"+r]= h==null||h===""?"":(/^\d+$/.test(h)?Number(h):h); vals["C"+r]=v.plaat?xlTime(v.uur):""; vals["D"+r]=v.merk||""; vals["E"+r]=v.plaat||""; vals["F"+r]=v.opm||""; }
   const dec=new TextDecoder(), enc=new TextEncoder(); const out=[];
   Object.entries(PVD.tpl).forEach(([name,b64])=>{
     if(name==="xl/calcChain.xml") return;
     let data=b64u8(b64);
-    if(name==="xl/worksheets/sheet1.xml") data=enc.encode(setCells(dec.decode(data),vals));
+    if(name==="xl/worksheets/sheet1.xml") data=enc.encode(setCells(pvGrow(dec.decode(data),N),vals));
+    if(N && name==="xl/comments1.xml") data=enc.encode(dec.decode(data).replace('ref="A58"',`ref="A${58+N}"`));
+    if(N && name==="xl/drawings/vmlDrawing1.vml") data=enc.encode(dec.decode(data).replace("<x:Row>57</x:Row>",`<x:Row>${57+N}</x:Row>`));
     if(name==="xl/worksheets/sheet2.xml") data=enc.encode(setCells(dec.decode(data),{A4:m.naam,B4:m.tel,C4:m.mail}));
     if(name==="[Content_Types].xml") data=enc.encode(dec.decode(data).replace(/<Override PartName="\/xl\/calcChain.xml"[^>]*\/>/,""));
     if(name==="xl/_rels/workbook.xml.rels") data=enc.encode(dec.decode(data).replace(/<Relationship [^>]*Target="calcChain.xml"\/>/,""));
-    if(name==="xl/workbook.xml") data=enc.encode(dec.decode(data).replace(/<calcPr([^>]*)\/>/,(a,b)=>`<calcPr${b.replace(/\s*fullCalcOnLoad="[^"]*"/,"")} fullCalcOnLoad="1"/>`));
+    if(name==="xl/workbook.xml") data=enc.encode(dec.decode(data).replace("Melding!$A$1:$G$58","Melding!$A$1:$G$"+(58+N)).replace(/<calcPr([^>]*)\/>/,(a,b)=>`<calcPr${b.replace(/\s*fullCalcOnLoad="[^"]*"/,"")} fullCalcOnLoad="1"/>`));
     out.push({name,data});
   });
   return zipStore(out);
