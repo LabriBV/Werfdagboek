@@ -47,9 +47,11 @@ legend .n{font:500 .75rem var(--mono);color:var(--accent);border:1px solid var(-
 .grid .full{grid-column:1/-1}
 @media (max-width:480px){.grid:not(.keep2){grid-template-columns:minmax(0,1fr)}.keep2{gap:10px 8px}}
 label{display:flex;flex-direction:column;gap:4px;font-size:.78rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);min-width:0}
-input[type=date]{-webkit-appearance:none;appearance:none;display:block;text-align:left;line-height:1.2;min-height:42px}
-input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0}
-input[type=date]::-webkit-calendar-picker-indicator{margin:0}
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;display:block;width:100%;max-width:100%;min-width:0;text-align:left;line-height:1.2;height:42px;min-height:42px;padding-top:0;padding-bottom:0}
+input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and-time-value{text-align:left;margin:0;padding:0;line-height:42px;min-height:0}
+input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-calendar-picker-indicator{margin:0}
+.grid>label{min-width:0}
+#pvform .grid{align-items:end}
 input,select,textarea{font:400 1rem var(--body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 11px;width:100%;min-width:0;text-transform:none;letter-spacing:0}
 input[type=number],.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 textarea{min-height:96px;resize:vertical}
@@ -118,7 +120,8 @@ textarea{min-height:96px;resize:vertical}
 .vr-ph .ph button{width:22px;height:22px;top:2px;right:2px;font-size:.8rem}
 .vr-dr{display:flex;gap:8px;align-items:center}
 .vr-dr input{flex:1;min-width:0;height:38px;font-size:16px}
-.vr-dr input.vh-uur{flex:0 0 96px;padding:0 4px}
+.vr-dr input.vh-uur{flex:0 0 96px;width:96px;height:38px;min-height:38px;padding:0 6px}
+.vr-dr input.vh-uur::-webkit-date-and-time-value{line-height:38px}
 .vr-d{padding-left:30px}
 .pv-more{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
 .pv-more .btn{flex:0 0 auto}
@@ -360,13 +363,11 @@ tr:last-child td{border-bottom:0}
           <label>Datum plaatsing<input type="date" id="pv-pdat"></label>
           <label>Uur plaatsing<input type="time" id="pv-puur"></label>
           <label>Type borden<select id="pv-type"><option>E1</option><option>E3</option><option>E1 + E3</option></select></label>
-          <label>Aantal borden<input id="pv-borden" class="num" inputmode="numeric"></label>
-          <label>Voorbehouden lengte (m)<input id="pv-lengte" class="num" inputmode="decimal"></label>
-          <label>Opmerking signalisatie<input id="pv-sopm" autocomplete="off"></label>
+          <label>Lengte (m)<input id="pv-lengte" class="num" inputmode="decimal"></label>
           <label>Geldig van<input type="date" id="pv-van"></label>
           <label>Geldig tot<input type="date" id="pv-tot"></label>
-          <label>Uren op de borden: van<input type="time" id="pv-uvan"></label>
-          <label>tot<input type="time" id="pv-utot"></label>
+          <label>Uur borden van<input type="time" id="pv-uvan"></label>
+          <label>Uur borden tot<input type="time" id="pv-utot"></label>
         </div>
       </fieldset>
       <fieldset>
@@ -1377,8 +1378,8 @@ async function pvPdf(p){
   // 4
   sect("4.  SIGNALISATIE  /  SIGNALISATION");
   const H=(a,b,s)=>lab(a,b,24,s,{align:"center"});
-  H(0,0,"Datum plaatsing borden / Date du placement"); H(1,1,"Uur plaatsing / Heure"); H(2,2,"Type / Type"); H(3,3,"Aantal borden / Nombre de panneaux"); H(4,4,"Voorbehouden lengte (m) / Distance réservée (m)"); H(5,6,"Opmerking signalisatie / Remarque"); y+=24;
-  const c={align:"center"}; val(0,0,14,fdmy(p.pdat),c); val(1,1,14,p.puur,c); val(2,2,14,p.type,c); val(3,3,14,p.borden,c); val(4,4,14,p.lengte,c); val(5,6,14,p.sopm); y+=14;
+  H(0,0,"Datum plaatsing borden / Date du placement"); H(1,1,"Uur plaatsing / Heure"); H(2,3,"Type borden / Type de panneaux"); H(4,6,"Voorbehouden lengte (m) / Distance réservée (m)"); y+=24;
+  const c={align:"center"}; val(0,0,14,fdmy(p.pdat),c); val(1,1,14,p.puur,c); val(2,3,14,p.type,c); val(4,6,14,p.lengte,c); y+=14;
   H(0,0,"Geldig van / Valable du"); H(1,1,"tot / au"); H(2,3,"Uren op de borden / Horaire — van"); H(4,4,"tot / à"); H(5,6,"Aantal dagen / Nombre de jours"); y+=24;
   val(0,0,14,fdmy(p.van),c); val(1,1,14,fdmy(p.tot),c); val(2,3,14,p.uvan,c); val(4,4,14,p.utot,c); val(5,6,14,String(dagen),c); y+=14;
   // 5
@@ -1422,7 +1423,7 @@ function pvXlsx(p){
   const N=Math.max(0,V.length-25);
   const vals={ B5:p.zone||"", F5:xlDate(iso(new Date())), B6:p.pmail||z.mail||"— zone selecteren —", B7:[p.pmail?"":(z.mail2||""), z.tel?"Tel: "+z.tel:"", z.fax?"Fax: "+z.fax:""].filter(Boolean).join("   |   "), B8:z.let||"",
     E11:m.naam, E12:m.tel, B13:m.mail, E13:myName||"", B16:p.gemeente, E16:p.reden, B17:p.straat, B18:p.verg, E18:p.verl, G18:p.bc,
-    A22:xlDate(p.pdat), B22:xlTime(p.puur), C22:p.type, D22:num(p.borden), E22:num(p.lengte), F22:p.sopm,
+    A22:xlDate(p.pdat), B22:xlTime(p.puur), C22:p.type, D22:"", E22:num(p.lengte), F22:"",
     A24:xlDate(p.van), B24:xlDate(p.tot), C24:xlTime(p.uvan), E24:xlTime(p.utot), F24:(xlDate(p.van)!=null&&xlDate(p.tot)!=null)?xlDate(p.tot)-xlDate(p.van)+1:"",
     A27: V.length?`Aantal vastgestelde voertuigen / Nombre de véhicules constatés : ${V.length}`:"NIHIL — geen voertuigen aanwezig op het ogenblik van de plaatsing / Pas de véhicules sur place au moment de la pose",
     ["B"+(56+N)]:m.naam, ["E"+(56+N)]:xlDate(iso(new Date())), ["B"+(58+N)]:pvOnderwerp(p) };
