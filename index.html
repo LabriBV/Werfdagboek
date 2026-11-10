@@ -351,6 +351,7 @@ tr:last-child td{border-bottom:0}
       <fieldset>
         <legend><span class="n">2</span>Politiezone</legend>
         <label>Politiezone<select id="pv-zone"></select></label>
+        <label style="margin-top:12px">E-mail politie (bestemmeling)<input id="pv-pmail" type="email" inputmode="email" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="komt van de politiezone"></label>
         <p class="msg pv-zinfo" id="pv-zinfo"></p>
       </fieldset>
       <fieldset>
@@ -378,8 +379,9 @@ tr:last-child td{border-bottom:0}
         <p class="msg" id="pv-nihil">Geen voertuigen = «NIHIL» op het formulier.</p>
       </fieldset>
       <div class="actions pv-actions">
-        <button class="btn primary" type="button" id="pv-xlsx">Excel maken &amp; delen</button>
-        <button class="btn" type="button" id="pv-mail">Mail naar politie</button>
+        <button class="btn primary" type="button" id="pv-mail">Mail naar politie</button>
+        <button class="btn" type="button" id="pv-pdf">PDF delen</button>
+        <button class="btn" type="button" id="pv-xlsx">Excel delen</button>
         <button class="btn" type="button" id="pv-fotos" hidden>Foto's delen</button>
         <button class="btn small danger" type="button" id="pv-del">Verwijderen</button>
         <p class="msg" id="pv-msg" role="status" style="width:100%;margin:0"></p>
@@ -1132,7 +1134,7 @@ function pvNew(){
   pvId=id; pvStore(); pvRender();
 }
 function pvStore(){ if(!lsSet(LS_PV,JSON.stringify(PV))){ const m=$("#pv-msg"); m.className="msg err"; m.textContent="Het geheugen van dit toestel is vol. Verwijder oude parkeerverboden."; } }
-const PVF=[["bc","pv-bc"],["gemeente","pv-gem"],["straat","pv-straat"],["verg","pv-verg"],["verl","pv-verl"],["reden","pv-reden"],["zone","pv-zone"],["pdat","pv-pdat"],["puur","pv-puur"],["type","pv-type"],["borden","pv-borden"],["lengte","pv-lengte"],["sopm","pv-sopm"],["van","pv-van"],["tot","pv-tot"],["uvan","pv-uvan"],["utot","pv-utot"]];
+const PVF=[["bc","pv-bc"],["gemeente","pv-gem"],["straat","pv-straat"],["verg","pv-verg"],["verl","pv-verl"],["reden","pv-reden"],["zone","pv-zone"],["pmail","pv-pmail"],["pdat","pv-pdat"],["puur","pv-puur"],["type","pv-type"],["borden","pv-borden"],["lengte","pv-lengte"],["sopm","pv-sopm"],["van","pv-van"],["tot","pv-tot"],["uvan","pv-uvan"],["utot","pv-utot"]];
 function pvRead(){
   const p=PV[pvId]; if(!p) return null;
   PVF.forEach(([k,id])=>{ const el=document.getElementById(id); if(el) p[k]=el.value.trim(); });
@@ -1147,7 +1149,7 @@ function pvList(){
 }
 function pvZoneInfo(){
   const z=PVD.zones.find(x=>x.naam===$("#pv-zone").value);
-  $("#pv-zinfo").textContent = z ? [z.mail+(z.mail2?" + "+z.mail2:""), [z.tel?"Tel "+z.tel:"",z.fax?"Fax "+z.fax:""].filter(Boolean).join(" · "), z.let].filter(Boolean).join("\n")
+  $("#pv-zinfo").textContent = z ? [[z.tel?"Tel "+z.tel:"",z.fax?"Fax "+z.fax:""].filter(Boolean).join(" · "), z.let].filter(Boolean).join("\n")
     : ($("#pv-gem").value ? "Voor deze gemeente staat geen politiezone in de lijst. Kies de zone zelf of vul ze aan in de Excel (blad Zones)." : "");
 }
 function pvCount(){ const n=[...document.querySelectorAll("#pv-rows .vr")].filter(vrFilled).length; $("#pv-cnt").textContent=n?n+(n===1?" wagen":" wagens"):""; $("#pv-nihil").hidden=!!n;
@@ -1204,13 +1206,15 @@ function pvRender(){
   $("#pv-rows").innerHTML=""; p.voertuigen.forEach(v=>vehRow(v)); for(let i=p.voertuigen.length;i<Math.max(10,p.voertuigen.length+1);i++) vehRow({}); pvNumber();
   const w=$("#pv-bc").closest(".combo"); if(w) w.dataset.ander=""; upgradeCombos(); refreshCombos();
   window.__loadBlobs && window.__loadBlobs(p.voertuigen.flatMap(v=>v.fotos||[])).then(()=>document.querySelectorAll("#pv-rows .vr").forEach(r=>{ (r._fotos||[]).forEach(f=>{ if(!f.url) f.url=window.__blobUrl(f.id); }); pvPh(r); }));
+  if(!$("#pv-pmail").value && $("#pv-zone").value) $("#pv-pmail").value=zoneMail($("#pv-zone").value);
   pvLastBc=$("#pv-bc").value.trim(); if(!$("#pv-verg").value && pvLastBc) $("#pv-verg").value=vergVoor(pvLastBc);
   pvZoneInfo(); pvList(); pvCount(); $("#pv-msg").textContent="";
 }
 $("#pvform").addEventListener("input",pvSaveSoon); $("#pvform").addEventListener("change",pvSaveSoon);
 $("#pvform").addEventListener("submit",e=>e.preventDefault());
-$("#pv-gem").addEventListener("change",()=>{ const z=zoneVoor($("#pv-gem").value); if(z) $("#pv-zone").value=z; pvZoneInfo(); });
-$("#pv-zone").addEventListener("change",pvZoneInfo);
+$("#pv-gem").addEventListener("change",()=>{ const z=zoneVoor($("#pv-gem").value); if(z && z!==$("#pv-zone").value){ $("#pv-zone").value=z; $("#pv-pmail").value=zoneMail(z); } pvZoneInfo(); });
+const zoneMail=naam=>{ const z=PVD.zones.find(x=>x.naam===naam); return z?[z.mail,z.mail2].filter(Boolean).join(", "):""; };
+$("#pv-zone").addEventListener("change",()=>{ $("#pv-pmail").value=zoneMail($("#pv-zone").value); pvZoneInfo(); });
 let pvLastBc=null;
 $("#pv-bc").addEventListener("input",()=>{ // vergunning, straat en gemeente overnemen van de werf
   const v=$("#pv-bc").value.trim(); if(v===pvLastBc) return; const nieuw=pvLastBc!==null; pvLastBc=v;
@@ -1263,7 +1267,7 @@ function setCells(xml, vals){
   return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'+out;
 }
 function pvMelder(){ return {naam:myName||"", tel:lsGet(LS_TEL,""), mail:lsGet(LS_MAIL,"")}; }
-function pvOnderwerp(p){ return `Parkeerverbod ${p.gemeente} — ${p.straat} — plaatsing ${fdmy(p.pdat)} (geldig ${fdmy(p.van)} t.e.m. ${fdmy(p.tot)})`; }
+function pvOnderwerp(p){ return "Kennisgeving plaatsing parkeerverbod / Notification de placement d'une interdiction de stationnement"; }
 function pvGrow(xml,N){ // N extra voertuiglijnen invoegen na rij 53
   if(N<=0) return xml; const sh=r=>r>=54?r+N:r;
   xml=xml.replace(/<row r="(\d+)"/g,(a,r)=>`<row r="${sh(+r)}"`).replace(/<c r="([A-Z]+)(\d+)"/g,(a,c,r)=>`<c r="${c}${sh(+r)}"`)
@@ -1277,10 +1281,146 @@ function pvGrow(xml,N){ // N extra voertuiglijnen invoegen na rij 53
     .replace(/<pageSetup /,'<pageSetup fitToHeight="0" ');
   return xml;
 }
+// ---- PDF van het meldingsformulier (zonder externe bibliotheek, werkt offline)
+const PDF_W={"Helvetica":[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,761,556,556,222,556,333,1000,556,556,333,1000,667,333,1000,556,611,556,556,222,222,333,333,350,556,1000,333,1000,500,333,944,556,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500],"Helvetica-Bold":[278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,761,556,611,278,556,500,1000,556,556,333,1000,667,333,1000,611,611,611,611,278,278,500,500,350,556,1000,333,1000,556,333,944,611,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556],"Helvetica-Oblique":[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,761,556,556,222,556,333,1000,556,556,333,1000,667,333,1000,556,611,556,556,222,222,333,333,350,556,1000,333,1000,500,333,944,556,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500]};
+const PDF_CP={0x20AC:128,0x201A:130,0x0192:131,0x201E:132,0x2026:133,0x2020:134,0x2021:135,0x02C6:136,0x2030:137,0x0160:138,0x2039:139,0x0152:140,0x017D:142,0x2018:145,0x2019:146,0x201C:147,0x201D:148,0x2022:149,0x2013:150,0x2014:151,0x02DC:152,0x2122:153,0x0161:154,0x203A:155,0x0153:156,0x017E:158,0x0178:159};
+const pdfCodes=s=>[...String(s??"")].map(ch=>{ const c=ch.codePointAt(0); if(c>=32&&c<127) return c; if(c>=160&&c<256) return c; if(PDF_CP[c]) return PDF_CP[c]; if(c===10) return 32; return 63; });
+const pdfStrW=(s,font,size)=>pdfCodes(s).reduce((t,c)=>t+(PDF_W[font][c-32]||556),0)*size/1000;
+const pdfLit=s=>"("+pdfCodes(s).map(c=>c===40||c===41||c===92?"\\"+String.fromCharCode(c):c<127?String.fromCharCode(c):"\\"+c.toString(8).padStart(3,"0")).join("")+")";
+const PDF_F={"Helvetica":"F1","Helvetica-Bold":"F2","Helvetica-Oblique":"F3"};
+function pdfWrap(s,font,size,w,raw){
+  const out=[]; String(s??"").split("\n").forEach(par=>{ let line="";
+    par.split(" ").forEach(word=>{ const t=line?line+" "+word:word; if(pdfStrW(t,font,size)<=w||!line){ line=t; } else { out.push(line); line=word; } });
+    out.push(line); });
+  return raw?out:out.map(l=>{ while(l.length>1&&pdfStrW(l,font,size)>w) l=l.slice(0,-2)+"…"; return l; });
+}
+class PdfDoc{
+  constructor(){ this.W=595.28; this.H=841.89; this.pages=[]; this.imgs=[]; this.add(); }
+  add(){ this.c=[]; this.pages.push({c:this.c,imgs:[]}); }
+  col(rgb){ return rgb.map(v=>(v/255).toFixed(3)).join(" "); }
+  rect(x,y,w,h,fill,stroke){ const Y=this.H-y-h;
+    if(fill) this.c.push(`${this.col(fill)} rg ${x.toFixed(2)} ${Y.toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re f`);
+    if(stroke) this.c.push(`${this.col(stroke)} RG 0.5 w ${x.toFixed(2)} ${Y.toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re S`); }
+  text(x,y,s,o={}){ const font=o.font||"Helvetica", size=o.size||8; let X=x;
+    if(o.align==="center") X=x-pdfStrW(s,font,size)/2; else if(o.align==="right") X=x-pdfStrW(s,font,size);
+    this.c.push(`BT /${PDF_F[font]} ${size} Tf ${this.col(o.color||[0,0,0])} rg ${X.toFixed(2)} ${(this.H-y).toFixed(2)} Td ${pdfLit(s)} Tj ET`); }
+  cell(x,y,w,h,s,o={}){ // tekstvak met achtergrond, rand en terugloop
+    this.rect(x,y,w,h,o.fill,o.stroke===false?null:(o.stroke||[160,168,180]));
+    if(s==null||s==="") return; const font=o.font||"Helvetica", pad=o.pad??3; let size=o.size||8, lh, lines, max;
+    for(;;){ lh=size*1.18; lines=pdfWrap(s,font,size,w-2*pad,true); max=Math.max(1,Math.floor((h-2)/lh)); // te lang: eerst kleiner, pas daarna afkappen
+      if((lines.length<=max && lines.every(l=>pdfStrW(l,font,size)<=w-2*pad+0.1)) || size<=5.2) break; size-=0.3; lines=null; }
+    lines=pdfWrap(s,font,size,w-2*pad); if(lines.length>max){ lines=lines.slice(0,max); lines[max-1]=lines[max-1].replace(/.?$/,"…"); }
+    const top=y+(h-lines.length*lh)/2+size*0.86;
+    lines.forEach((l,i)=>{ const yy=top+i*lh; if(o.align==="center") this.text(x+w/2,yy,l,{font,size,color:o.color,align:"center"}); else this.text(x+pad,yy,l,{font,size,color:o.color}); }); }
+  image(img,x,y,w,h){ let i=this.imgs.indexOf(img); if(i<0){ this.imgs.push(img); i=this.imgs.length-1; } this.pages[this.pages.length-1].imgs.push(i);
+    this.c.push(`q ${w.toFixed(2)} 0 0 ${h.toFixed(2)} ${x.toFixed(2)} ${(this.H-y-h).toFixed(2)} cm /Im${i} Do Q`); }
+  blob(title){
+    const enc=new TextEncoder(), parts=[], offs=[]; let len=0; const push=b=>{ if(typeof b==="string") b=enc.encode(b); parts.push(b); len+=b.length; };
+    const objs=[]; const obj=body=>{ objs.push(body); return objs.length; }; // body: string of Uint8Array-lijst
+    const cat=obj(null), pagesId=obj(null);
+    const f1=obj("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+    const f2=obj("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+    const f3=obj("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique /Encoding /WinAnsiEncoding >>");
+    const imgIds=this.imgs.map(im=>obj([`<< /Type /XObject /Subtype /Image /Width ${im.w} /Height ${im.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.data.length} >>\nstream\n`,im.data,"\nendstream"]));
+    const pageIds=this.pages.map(pg=>{ const cs=enc.encode(pg.c.join("\n")); const cid=obj([`<< /Length ${cs.length} >>\nstream\n`,cs,"\nendstream"]);
+      const xo=[...new Set(pg.imgs)].map(i=>`/Im${i} ${imgIds[i]} 0 R`).join(" ");
+      return obj(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${this.W} ${this.H}] /Resources << /Font << /F1 ${f1} 0 R /F2 ${f2} 0 R /F3 ${f3} 0 R >>${xo?` /XObject << ${xo} >>`:""} >> /Contents ${cid} 0 R >>`); });
+    objs[cat-1]=`<< /Type /Catalog /Pages ${pagesId} 0 R >>`;
+    objs[pagesId-1]=`<< /Type /Pages /Kids [${pageIds.map(i=>i+" 0 R").join(" ")}] /Count ${pageIds.length} >>`;
+    const info=obj(`<< /Title ${pdfLit(title||"")} /Author (BESIX-CONNECT) /Producer (Werfdagboek Sibelga) >>`);
+    push(new Uint8Array([..."%PDF-1.4\n"].map(c=>c.charCodeAt(0)).concat([37,226,227,207,211,10])));
+    objs.forEach((b,i)=>{ offs[i]=len; push(`${i+1} 0 obj\n`); (Array.isArray(b)?b:[b]).forEach(push); push("\nendobj\n"); });
+    const xref=len; push(`xref\n0 ${objs.length+1}\n0000000000 65535 f \n`+offs.map(o=>String(o).padStart(10,"0")+" 00000 n \n").join(""));
+    push(`trailer\n<< /Size ${objs.length+1} /Root ${cat} 0 R /Info ${info} 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+    return new Blob(parts,{type:"application/pdf"});
+  }
+}
+async function pdfJpeg(id){ // foto uit de opslag → JPEG voor in de PDF
+  const url=window.__blobUrl(id); if(!url) return null;
+  try{ const b=await (await fetch(url)).blob(); const bmp=await createImageBitmap(b); const s=Math.min(1,1100/Math.max(bmp.width,bmp.height));
+    const c=document.createElement("canvas"); c.width=Math.round(bmp.width*s); c.height=Math.round(bmp.height*s);
+    const g=c.getContext("2d"); g.fillStyle="#fff"; g.fillRect(0,0,c.width,c.height); g.drawImage(bmp,0,0,c.width,c.height);
+    const jb=await new Promise(r=>c.toBlob(r,"image/jpeg",0.8)); return {w:c.width,h:c.height,data:new Uint8Array(await jb.arrayBuffer())};
+  }catch(e){ return null; }
+}
+async function pvPdf(p){
+  const z=PVD.zones.find(x=>x.naam===p.zone)||{}; const m=pvMelder();
+  const V=p.voertuigen.filter(v=>v.plaat||v.merk||v.huisnr).slice().sort((a,b)=>(a.uur||'').localeCompare(b.uur||''));
+  const NAVY=[31,56,100], NAVY2=[47,84,150], LAB=[234,238,244], VAL=[255,248,225], WHITE=[255,255,255], GRID=[160,168,180], INK=[30,30,30];
+  const d=new PdfDoc(), L=28, TW=d.W-2*L, BOT=d.H-26;
+  const cw=[26,16,12,20,13,22,26].map(v=>v/135*TW); const cx=[L]; cw.forEach((w,i)=>cx.push(cx[i]+w));
+  const span=(a,b)=>cx[b+1]-cx[a]; // kolommen a..b (0=A)
+  const today=fdmy(iso(new Date())); const dagen=(p.van&&p.tot)?Math.round((new Date(p.tot)-new Date(p.van))/864e5)+1:"";
+  let y=L;
+  const lab=(a,b,h,s,o={})=>d.cell(cx[a],y,span(a,b),h,s,{fill:LAB,size:6.8,font:"Helvetica-Bold",color:[50,60,80],...o});
+  const val=(a,b,h,s,o={})=>d.cell(cx[a],y,span(a,b),h,s,{fill:VAL,size:8,color:INK,...o});
+  const sect=t=>{ y+=5; d.cell(L,y,TW,15,t,{fill:NAVY,stroke:NAVY,font:"Helvetica-Bold",size:8,color:WHITE,pad:5}); y+=15; };
+  // titel
+  d.cell(L,y,TW,24,"MELDING PLAATSING PARKEERVERBOD  /  SIGNALEMENT DU PLACEMENT DE L'INTERDICTION DE STATIONNEMENT",{fill:NAVY,stroke:NAVY,font:"Helvetica-Bold",size:9.5,color:WHITE,align:"center"}); y+=24;
+  d.cell(L,y,TW,13,"BESIX-CONNECT  |  Werken in opdracht van Sibelga — Travaux pour le compte de Sibelga",{fill:NAVY2,stroke:NAVY2,font:"Helvetica-Bold",size:6.8,color:WHITE,align:"center"}); y+=13;
+  // 1
+  sect("1.  BESTEMMELING — POLITIEZONE  /  DESTINATAIRE — ZONE DE POLICE");
+  lab(0,0,14,"Politiezone / Zone de police"); val(1,3,14,p.zone); lab(4,4,14,"Datum melding / Date"); val(5,6,14,today,{align:"center"}); y+=14;
+  lab(0,0,14,"E-mail bestemmeling"); val(1,6,14,p.pmail||z.mail||"—",{font:"Helvetica-Bold"}); y+=14;
+  lab(0,0,14,"Tweede e-mail / Tel. / Fax"); val(1,6,14,[p.pmail?"":(z.mail2||""), z.tel?"Tel: "+z.tel:"", z.fax?"Fax: "+z.fax:""].filter(Boolean).join("   |   ")); y+=14;
+  lab(0,0,22,"Aandachtspunt zone / Point d'attention"); val(1,6,22,z.let||"",{size:7}); y+=22;
+  // 2
+  sect("2.  AANVRAGER  /  DEMANDEUR");
+  lab(0,0,14,"Naam firma / Société"); val(1,2,14,"BESIX-CONNECT"); lab(3,3,14,"Contactpersoon"); val(4,6,14,m.naam); y+=14;
+  lab(0,0,14,"Adres / Adresse"); val(1,2,14,"Baaikensstraat 21, 9240 Zele"); lab(3,3,14,"Telefoon / Téléphone"); val(4,6,14,m.tel); y+=14;
+  lab(0,0,14,"E-mail"); val(1,2,14,m.mail,{size:7}); lab(3,3,14,"Werfleider / Chef"); val(4,6,14,myName||""); y+=14;
+  // 3
+  sect("3.  WERF  /  CHANTIER");
+  lab(0,0,14,"Gemeente / Commune"); val(1,2,14,p.gemeente); lab(3,3,14,"Reden werf / Motif"); val(4,6,14,p.reden); y+=14;
+  lab(0,0,22,"Straat + huisnummers / Rue + numéros"); val(1,6,22,p.straat); y+=22;
+  lab(0,0,14,"Nr. vergunning / N° permis (Osiris)"); val(1,2,14,p.verg,{font:"Helvetica-Bold"}); lab(3,3,14,"Nr. verlenging"); val(4,4,14,p.verl); lab(5,5,14,"Werfnr. / N° chantier"); val(6,6,14,p.bc,{font:"Helvetica-Bold"}); y+=14;
+  // 4
+  sect("4.  SIGNALISATIE  /  SIGNALISATION");
+  const H=(a,b,s)=>lab(a,b,24,s,{align:"center"});
+  H(0,0,"Datum plaatsing borden / Date du placement"); H(1,1,"Uur plaatsing / Heure"); H(2,2,"Type / Type"); H(3,3,"Aantal borden / Nombre de panneaux"); H(4,4,"Voorbehouden lengte (m) / Distance réservée (m)"); H(5,6,"Opmerking signalisatie / Remarque"); y+=24;
+  const c={align:"center"}; val(0,0,14,fdmy(p.pdat),c); val(1,1,14,p.puur,c); val(2,2,14,p.type,c); val(3,3,14,p.borden,c); val(4,4,14,p.lengte,c); val(5,6,14,p.sopm); y+=14;
+  H(0,0,"Geldig van / Valable du"); H(1,1,"tot / au"); H(2,3,"Uren op de borden / Horaire — van"); H(4,4,"tot / à"); H(5,6,"Aantal dagen / Nombre de jours"); y+=24;
+  val(0,0,14,fdmy(p.van),c); val(1,1,14,fdmy(p.tot),c); val(2,3,14,p.uvan,c); val(4,4,14,p.utot,c); val(5,6,14,String(dagen),c); y+=14;
+  // 5
+  sect("5.  VASTGESTELDE VOERTUIGEN BIJ PLAATSING  /  VÉHICULES CONSTATÉS LORS DE LA POSE");
+  d.cell(L,y,TW,16,V.length?`Aantal vastgestelde voertuigen / Nombre de véhicules constatés : ${V.length}`:"NIHIL — geen voertuigen aanwezig op het ogenblik van de plaatsing / Pas de véhicules sur place au moment de la pose",{fill:LAB,font:"Helvetica-Bold",size:8,align:"center"}); y+=16;
+  const head=()=>{ const o={fill:NAVY,stroke:GRID,font:"Helvetica-Bold",size:6.8,color:WHITE,align:"center"};
+    [["Nr.",0,0],["Huisnr. / N° maison",1,1],["Uur / Heure",2,2],["Merk voertuig / Marque",3,3],["Nummerplaat / Immatriculation",4,4],["Opmerking / Remarque",5,6]].forEach(([t,a,b])=>d.cell(cx[a],y,span(a,b),20,t,o)); y+=20; };
+  head();
+  const RH=11.4, n=Math.max(25,V.length);
+  for(let i=0;i<n;i++){
+    if(y+RH>BOT){ d.add(); y=L; d.cell(L,y,TW,14,`Vervolg voertuigen / Suite des véhicules — ${p.bc||""} ${p.straat||""}`,{fill:NAVY,stroke:NAVY,font:"Helvetica-Bold",size:8,color:WHITE,pad:5}); y+=14; head(); }
+    const v=V[i]||{}, f={fill:i%2?[250,250,252]:WHITE,size:7.5,align:"center"};
+    d.cell(cx[0],y,span(0,0),RH,String(i+1),{...f,color:[90,90,90]}); d.cell(cx[1],y,span(1,1),RH,v.huisnr,f); d.cell(cx[2],y,span(2,2),RH,v.plaat?v.uur:"",f);
+    d.cell(cx[3],y,span(3,3),RH,v.merk,f); d.cell(cx[4],y,span(4,4),RH,v.plaat,{...f,font:"Helvetica-Bold"}); d.cell(cx[5],y,span(5,6),RH,v.opm,{...f,align:"left",size:7}); y+=RH;
+  }
+  // voet
+  if(y+4+20+30+16>BOT){ d.add(); y=L; }
+  y+=4; d.cell(L,y,TW,20,"Dit document moet op de werf aanwezig zijn op het ogenblik van een politiecontrole en wordt op de dag van de plaatsing doorgestuurd. Bij afwezigheid van voertuigen wordt «NIHIL» gemeld.  /  Ce document doit être présent sur le chantier lors d'un contrôle de police et être transmis le jour du placement.",{fill:[248,248,248],font:"Helvetica-Oblique",size:6.3,align:"center"}); y+=20;
+  lab(0,0,30,"Opgemaakt door / Établi par"); val(1,2,30,m.naam); lab(3,3,30,"Datum / Date"); val(4,4,30,today,c); lab(5,5,30,"Handtekening / Signature"); val(6,6,30,""); y+=30;
+  lab(0,0,16,"Onderwerp e-mail"); val(1,6,16,pvOnderwerp(p),{size:7}); y+=16;
+  // foto's van de voertuigen als bijlage
+  const F=[]; V.forEach((v,i)=>(v.fotos||[]).forEach(id=>F.push({v,i,id})));
+  if(F.length){
+    const GW=(TW-10)/2, GH=200, CAP=22; let k=0;
+    for(const f of F){
+      const im=await pdfJpeg(f.id); if(!im) continue;
+      if(k%6===0){ d.add(); y=L; d.cell(L,y,TW,16,`Foto's voertuigen / Photos des véhicules — ${p.bc||""} ${p.straat||""} ${p.gemeente||""} — Osiris ${p.verg||"-"}`,{fill:NAVY,stroke:NAVY,font:"Helvetica-Bold",size:8,color:WHITE,pad:5}); y+=22; }
+      const col=k%2, row=Math.floor((k%6)/2), x0=L+col*(GW+10), y0=y+row*(GH+CAP+8);
+      d.rect(x0,y0,GW,GH,[245,245,245],GRID); const s=Math.min(GW/im.w,GH/im.h), iw=im.w*s, ih=im.h*s; d.image(im,x0+(GW-iw)/2,y0+(GH-ih)/2,iw,ih);
+      d.cell(x0,y0+GH,GW,CAP-4,`${f.i+1}.  ${f.v.plaat||"—"}${f.v.merk?"  ·  "+f.v.merk:""}${f.v.huisnr?"  ·  t.h.v. nr. "+f.v.huisnr:""}${f.v.uur?"  ·  "+f.v.uur:""}`,{fill:LAB,font:"Helvetica-Bold",size:7.5});
+      k++;
+    }
+  }
+  // paginanummers
+  const tot=d.pages.length; d.pages.forEach((pg,i)=>{ d.c=pg.c; d.text(d.W-L,d.H-12,`${p.bc||""}  ·  pagina ${i+1}/${tot}`,{size:6.5,color:[120,120,120],align:"right"}); });
+  return d.blob(pvOnderwerp(p));
+}
+
 function pvXlsx(p){
   const z=PVD.zones.find(x=>x.naam===p.zone)||{}; const m=pvMelder(); const V=p.voertuigen.filter(v=>v.plaat||v.merk||v.huisnr).slice().sort((a,b)=>(a.uur||'').localeCompare(b.uur||''));
   const N=Math.max(0,V.length-25);
-  const vals={ B5:p.zone||"", F5:xlDate(iso(new Date())), B6:z.mail||"— zone selecteren —", B7:[z.mail2||"", z.tel?"Tel: "+z.tel:"", z.fax?"Fax: "+z.fax:""].filter(Boolean).join("   |   "), B8:z.let||"",
+  const vals={ B5:p.zone||"", F5:xlDate(iso(new Date())), B6:p.pmail||z.mail||"— zone selecteren —", B7:[p.pmail?"":(z.mail2||""), z.tel?"Tel: "+z.tel:"", z.fax?"Fax: "+z.fax:""].filter(Boolean).join("   |   "), B8:z.let||"",
     E11:m.naam, E12:m.tel, B13:m.mail, E13:myName||"", B16:p.gemeente, E16:p.reden, B17:p.straat, B18:p.verg, E18:p.verl, G18:p.bc,
     A22:xlDate(p.pdat), B22:xlTime(p.puur), C22:p.type, D22:num(p.borden), E22:num(p.lengte), F22:p.sopm,
     A24:xlDate(p.van), B24:xlDate(p.tot), C24:xlTime(p.uvan), E24:xlTime(p.utot), F24:(xlDate(p.van)!=null&&xlDate(p.tot)!=null)?xlDate(p.tot)-xlDate(p.van)+1:"",
@@ -1304,45 +1444,65 @@ function pvXlsx(p){
 }
 const pvNaam=p=>`Parkeerverbod_${(p.bc||"werf").replace(/\W+/g,"")}_${(p.straat||p.gemeente||"").replace(/[^\wÀ-ÿ]+/g,"_").slice(0,40)}_${p.pdat||""}.xlsx`;
 function pvCheck(p){
-  if(!p.zone) return ["Kies de politiezone.","#pv-zone"]; if(!p.gemeente) return ["Kies de gemeente.","#pv-gem"]; if(!p.straat) return ["Vul de straat en huisnummers in.","#pv-straat"];
+  if(!p.zone) return ["Kies de politiezone.","#pv-zone"]; if(!/^[^@\s]+@[^@\s]+\.[^@\s]+([,;\s]+[^@\s]+@[^@\s]+\.[^@\s]+)*$/.test((p.pmail||"").trim())) return ["Vul een geldig e-mailadres van de politie in.","#pv-pmail"]; if(!p.gemeente) return ["Kies de gemeente.","#pv-gem"]; if(!p.straat) return ["Vul de straat en huisnummers in.","#pv-straat"];
   if(!p.pdat||!p.van||!p.tot) return ["Vul de datum van plaatsing en de geldigheid in.","#pv-pdat"];
   if(!myName) return ["Vul eerst je naam in bij Instellingen.",null];
   return null;
 }
-$("#pv-xlsx").onclick=async()=>{
-  const p=pvRead(); pvStore(); const m=$("#pv-msg"); m.className="msg";
-  const bad=pvCheck(p); if(bad){ m.className="msg err"; m.textContent=bad[0]; if(bad[1]) $(bad[1]).focus(); return; }
-  let blob; try{ blob=pvXlsx(p); }catch(e){ m.className="msg err"; m.textContent="Excel maken lukte niet: "+(e.message||e); return; }
-  const f=new File([blob],pvNaam(p),{type:blob.type});
-  try{ if(navigator.canShare && navigator.canShare({files:[f]})){ await navigator.share({files:[f], title:pvOnderwerp(p), text:pvOnderwerp(p)}); m.className="msg ok"; m.textContent="Excel gedeeld."; return; } }
-  catch(e){ if(e&&e.name==="AbortError") return; }
-  try{ await downloads.save({filename:f.name,data:f}); m.className="msg ok"; m.textContent="Excel opgeslagen in je downloads."; }catch(e){ m.className="msg err"; m.textContent="Excel bewaren lukte niet op dit toestel."; }
+async function pvDeel(files,title,m){ // deelmenu (gsm) of downloaden (computer)
+  try{ if(navigator.canShare && navigator.canShare({files})){ await navigator.share({files, title}); m.className="msg ok"; m.textContent=files.length>1?"Bestanden gedeeld.":"Bestand gedeeld."; return true; } }
+  catch(e){ if(e&&e.name==="AbortError") return false; }
+  try{ for(const f of files) await downloads.save({filename:f.name,data:f}); m.className="msg ok"; m.textContent=files.length>1?"Bestanden opgeslagen in je downloads.":"Opgeslagen in je downloads."; return true; }
+  catch(e){ m.className="msg err"; m.textContent="Bewaren lukte niet op dit toestel."; return false; }
+}
+async function pvBestanden(p,welke){ const out=[];
+  if(welke.includes("pdf")){ const b=await pvPdf(p); out.push(new File([b],pvNaam(p).replace(/\.xlsx$/,".pdf"),{type:"application/pdf"})); }
+  if(welke.includes("xlsx")){ const b=pvXlsx(p); out.push(new File([b],pvNaam(p),{type:b.type})); }
+  return out; }
+function pvKlaar(){ const p=pvRead(); pvStore(); const m=$("#pv-msg"); m.className="msg"; m.textContent="";
+  const bad=pvCheck(p); if(bad){ m.className="msg err"; m.textContent=bad[0]; if(bad[1]) $(bad[1]).focus(); return null; } return {p,m}; }
+for(const [id,welke] of [["#pv-xlsx",["xlsx"]],["#pv-pdf",["pdf"]]]) $(id).onclick=async()=>{
+  const k=pvKlaar(); if(!k) return; let files;
+  try{ k.m.textContent="Bezig…"; files=await pvBestanden(k.p,welke); }catch(e){ k.m.className="msg err"; k.m.textContent="Maken lukte niet: "+(e.message||e); return; }
+  k.m.textContent=""; await pvDeel(files,pvOnderwerp(k.p),k.m);
 };
-$("#pv-mail").onclick=()=>{
+$("#pv-mail").onclick=async()=>{
   const p=pvRead(); pvStore(); const m=$("#pv-msg"); const bad=pvCheck(p); if(bad){ m.className="msg err"; m.textContent=bad[0]; if(bad[1]) $(bad[1]).focus(); return; }
   const z=PVD.zones.find(x=>x.naam===p.zone)||{}; const me=pvMelder(); const V=p.voertuigen.filter(v=>v.plaat).slice().sort((a,b)=>(a.uur||'').localeCompare(b.uur||''));
-  const lijst=V.length?V.map((v,i)=>`${i+1}. ${v.plaat}${v.merk?" – "+v.merk:""}${v.huisnr?" – t.h.v. nr. "+v.huisnr:""}${v.uur?" – "+v.uur:""}${v.opm?" – "+v.opm:""}`).join("\n"):"NIHIL";
-  const body=`Geachte, / Madame, Monsieur,
+  const werf=[p.straat,p.gemeente].filter(Boolean).join(" ");
+  const body=`Beste,
 
-Hierbij melden wij de plaatsing van een parkeerverbod voor werken in opdracht van Sibelga.
-Par la présente, nous vous signalons le placement d'une interdiction de stationnement pour des travaux pour le compte de Sibelga.
+In bijlage vindt u formulieren betreffende de plaatsing van een parkeerverbod.
+Werf: ${werf}
+Osiris: ${p.verg||"-"}
+Opdrachtgever: Sibelga
 
-Werf / Chantier: ${p.straat}, ${p.gemeente}
-Werfnr. / N° chantier: ${p.bc||"-"}${p.verg?"\nVergunning / Permis: "+p.verg:""}
-Plaatsing / Placement: ${fdmy(p.pdat)} ${p.puur||""} (${p.type}${p.borden?", "+p.borden+" borden / panneaux":""})
-Geldig / Valable: ${fdmy(p.van)} – ${fdmy(p.tot)}, ${p.uvan}–${p.utot}
+Met vriendelijke groeten,
 
-Vastgestelde voertuigen / Véhicules constatés:
-${lijst}
+Bonjour,
+Veuillez trouver en pièce jointe le formulaire relatif à la mise en place d'une interdiction de stationnement.
+Chantier : ${werf}
+Osiris : ${p.verg||"-"}
+Maître d'ouvrage : Sibelga
+Cordialement,
 
-Het meldingsformulier volgt in bijlage. / Le formulaire de signalement suit en annexe.
-
-Met vriendelijke groeten / Bien à vous,
 ${me.naam}
-Besix-Connect${me.tel?"\n"+me.tel:""}`;
-  const to=[z.mail,z.mail2].filter(Boolean).join(",");
+BESIX Connect${me.tel?"\nM: "+me.tel:""}${me.mail?"\nE: "+me.mail:""}`;
+  const to=(p.pmail||[z.mail,z.mail2].filter(Boolean).join(",")).split(/[;,\s]+/).filter(Boolean).join(",");
+  let files; try{ m.className="msg"; m.textContent="Bezig…"; files=await pvBestanden(p,["pdf","xlsx"]); }catch(e){ m.className="msg err"; m.textContent="Bijlagen maken lukte niet: "+(e.message||e); return; }
+  m.textContent="";
+  // gsm: deelmenu met de Excel als bijlage + tekst; het politieadres staat op het klembord om bij "Aan" te plakken
+  if(navigator.canShare && navigator.canShare({files})){
+    try{ navigator.clipboard && navigator.clipboard.writeText(to).catch(()=>{}); }catch(e){}
+    try{ await navigator.share({files, title:pvOnderwerp(p), text:body});
+      m.className="msg ok"; m.textContent=`Kies Mail. Plak bij "Aan" het adres van de politie (staat op je klembord): ${to}`; }
+    catch(e){ if(!(e&&e.name==="AbortError")){ m.className="msg err"; m.textContent="Delen lukte niet: "+(e.message||e); } }
+    return;
+  }
+  // computer: Excel downloaden en mail openen met adres, onderwerp en tekst
+  try{ for(const f of files) await downloads.save({filename:f.name,data:f}); }catch(e){}
   location.href=`mailto:${to}?subject=${encodeURIComponent(pvOnderwerp(p))}&body=${encodeURIComponent(body)}`;
-  m.className="msg"; m.textContent="Mail geopend. Voeg de Excel als bijlage toe (eerst \"Excel maken & delen\" → Bewaar in Bestanden).";
+  m.className="msg"; m.textContent=`Mail geopend. De PDF en de Excel staan in je downloads: sleep ze als bijlage in de mail.`;
 };
 $("#pv-fotos").onclick=async()=>{
   const p=pvRead(); const files=[]; p.voertuigen.forEach((v,i)=>(v.fotos||[]).forEach((id,j)=>{ const b=window.__blobs[id]; if(b) files.push(new File([b],`${(v.plaat||"voertuig"+(i+1)).replace(/\W+/g,"")}_${j+1}.jpg`,{type:b.type||"image/jpeg"})); }));
