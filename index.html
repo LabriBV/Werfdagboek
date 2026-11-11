@@ -173,7 +173,7 @@ nav.tabs .tab-ico{flex:0 0 46px;font-size:1.15rem}
 .msg.err{color:var(--accent)}
 .msg.ok{color:var(--ok)}
 .pv-adres{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}
-.pv-adres b{font-family:var(--mono);color:var(--fg);word-break:break-all}
+.pv-adres-in{flex:1 1 220px;min-width:0;font:600 16px var(--mono);height:40px}
 .share{background:var(--surface);border:1px solid var(--ok);border-radius:var(--r);padding:12px;margin-bottom:16px;display:flex;flex-direction:column;gap:10px}
 .share-btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .btn.wa{background:var(--ok);border-color:var(--ok);color:var(--accent-ink);text-decoration:none;display:inline-flex;align-items:center;gap:8px}
@@ -1455,16 +1455,18 @@ function pvCheck(p){
 const pvGsm=()=>/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints>1 && /Mac/.test(navigator.platform||""));
 const pvKanDelen=files=>pvGsm() && !!navigator.canShare && navigator.canShare({files});
 function pvKopieer(t){ // tekst naar het klembord; werkt op de iPhone enkel rechtstreeks na een tik
-  try{ if(navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t).then(()=>true,()=>pvKopieerOud(t)); }catch(e){}
-  return Promise.resolve(pvKopieerOud(t));
+  const oud=pvKopieerOud(t); // eerst de klassieke manier (betrouwbaarst op iPhone), daarna ook de nieuwe
+  try{ if(navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t).then(()=>true,()=>oud); }catch(e){}
+  return Promise.resolve(oud);
 }
 function pvKopieerOud(t){ try{ const ta=document.createElement("textarea"); ta.value=t; ta.setAttribute("readonly",""); ta.style.cssText="position:fixed;top:0;left:0;opacity:0;font-size:16px";
   document.body.append(ta); ta.focus(); ta.setSelectionRange(0,t.length); const ok=document.execCommand("copy"); ta.remove(); return ok; }catch(e){ return false; } }
 function pvAdresMsg(m,to,ok){
   m.className="msg ok"; m.innerHTML="";
-  const t=document.createElement("div"); t.textContent=(ok?"Adres politie gekopieerd. ":"")+'Plak het bij "Aan" (vinger in het vak → Plak):'; m.append(t);
+  const t=document.createElement("div"); t.textContent=(ok?"Adres politie gekopieerd. ":"")+'Plak het bij "Aan". Lukt dat niet: tik op het adres hieronder, kies Kopieer en probeer opnieuw.'; m.append(t);
   const r=document.createElement("div"); r.className="pv-adres";
-  const a=document.createElement("b"); a.textContent=to; a.style.userSelect="all";
+  const a=document.createElement("input"); a.value=to; a.readOnly=true; a.className="pv-adres-in"; a.setAttribute("aria-label","Adres politie");
+  a.onclick=()=>{ a.focus(); a.setSelectionRange(0,a.value.length); };
   const b=document.createElement("button"); b.type="button"; b.className="btn small"; b.textContent="Kopieer adres";
   b.onclick=async()=>{ const k=await pvKopieer(to); b.textContent=k?"Gekopieerd ✓":"Selecteer en kopieer"; setTimeout(()=>b.textContent="Kopieer adres",2500); };
   r.append(a,b); m.append(r);
