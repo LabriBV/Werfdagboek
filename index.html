@@ -1450,8 +1450,10 @@ function pvCheck(p){
   if(!myName) return ["Vul eerst je naam in bij Instellingen.",null];
   return null;
 }
+const pvGsm=()=>/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints>1 && /Mac/.test(navigator.platform||""));
+const pvKanDelen=files=>pvGsm() && !!navigator.canShare && navigator.canShare({files});
 async function pvDeel(files,title,m){ // deelmenu (gsm) of downloaden (computer)
-  try{ if(navigator.canShare && navigator.canShare({files})){ await navigator.share({files, title}); m.className="msg ok"; m.textContent=files.length>1?"Bestanden gedeeld.":"Bestand gedeeld."; return true; } }
+  try{ if(pvKanDelen(files)){ await navigator.share({files, title}); m.className="msg ok"; m.textContent=files.length>1?"Bestanden gedeeld.":"Bestand gedeeld."; return true; } }
   catch(e){ if(e&&e.name==="AbortError") return false; }
   try{ for(const f of files) await downloads.save({filename:f.name,data:f}); m.className="msg ok"; m.textContent=files.length>1?"Bestanden opgeslagen in je downloads.":"Opgeslagen in je downloads."; return true; }
   catch(e){ m.className="msg err"; m.textContent="Bewaren lukte niet op dit toestel."; return false; }
@@ -1493,12 +1495,11 @@ BESIX Connect${me.tel?"\nM: "+me.tel:""}${me.mail?"\nE: "+me.mail:""}`;
   let files; try{ m.className="msg"; m.textContent="Bezig…"; files=await pvBestanden(p,["pdf","xlsx"]); }catch(e){ m.className="msg err"; m.textContent="Bijlagen maken lukte niet: "+(e.message||e); return; }
   m.textContent="";
   // gsm: deelmenu met de Excel als bijlage + tekst; het politieadres staat op het klembord om bij "Aan" te plakken
-  if(navigator.canShare && navigator.canShare({files})){
+  if(pvKanDelen(files)){
     try{ navigator.clipboard && navigator.clipboard.writeText(to).catch(()=>{}); }catch(e){}
     try{ await navigator.share({files, title:pvOnderwerp(p), text:body});
-      m.className="msg ok"; m.textContent=`Kies Mail. Plak bij "Aan" het adres van de politie (staat op je klembord): ${to}`; }
-    catch(e){ if(!(e&&e.name==="AbortError")){ m.className="msg err"; m.textContent="Delen lukte niet: "+(e.message||e); } }
-    return;
+      m.className="msg ok"; m.textContent=`Kies Mail. Plak bij "Aan" het adres van de politie (staat op je klembord): ${to}`; return; }
+    catch(e){ if(e&&e.name==="AbortError") return; } // lukt delen niet: verder zoals op de computer
   }
   // computer: Excel downloaden en mail openen met adres, onderwerp en tekst
   try{ for(const f of files) await downloads.save({filename:f.name,data:f}); }catch(e){}
