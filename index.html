@@ -172,6 +172,8 @@ nav.tabs .tab-ico{flex:0 0 46px;font-size:1.15rem}
 .msg{font-size:.9rem;color:var(--muted)}
 .msg.err{color:var(--accent)}
 .msg.ok{color:var(--ok)}
+.pv-adres{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.pv-adres b{font-family:var(--mono);color:var(--fg);word-break:break-all}
 .share{background:var(--surface);border:1px solid var(--ok);border-radius:var(--r);padding:12px;margin-bottom:16px;display:flex;flex-direction:column;gap:10px}
 .share-btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .btn.wa{background:var(--ok);border-color:var(--ok);color:var(--accent-ink);text-decoration:none;display:inline-flex;align-items:center;gap:8px}
@@ -1452,6 +1454,21 @@ function pvCheck(p){
 }
 const pvGsm=()=>/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints>1 && /Mac/.test(navigator.platform||""));
 const pvKanDelen=files=>pvGsm() && !!navigator.canShare && navigator.canShare({files});
+function pvKopieer(t){ // tekst naar het klembord; werkt op de iPhone enkel rechtstreeks na een tik
+  try{ if(navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t).then(()=>true,()=>pvKopieerOud(t)); }catch(e){}
+  return Promise.resolve(pvKopieerOud(t));
+}
+function pvKopieerOud(t){ try{ const ta=document.createElement("textarea"); ta.value=t; ta.setAttribute("readonly",""); ta.style.cssText="position:fixed;top:0;left:0;opacity:0;font-size:16px";
+  document.body.append(ta); ta.focus(); ta.setSelectionRange(0,t.length); const ok=document.execCommand("copy"); ta.remove(); return ok; }catch(e){ return false; } }
+function pvAdresMsg(m,to,ok){
+  m.className="msg ok"; m.innerHTML="";
+  const t=document.createElement("div"); t.textContent=(ok?"Adres politie gekopieerd. ":"")+'Plak het bij "Aan" (vinger in het vak → Plak):'; m.append(t);
+  const r=document.createElement("div"); r.className="pv-adres";
+  const a=document.createElement("b"); a.textContent=to; a.style.userSelect="all";
+  const b=document.createElement("button"); b.type="button"; b.className="btn small"; b.textContent="Kopieer adres";
+  b.onclick=async()=>{ const k=await pvKopieer(to); b.textContent=k?"Gekopieerd ✓":"Selecteer en kopieer"; setTimeout(()=>b.textContent="Kopieer adres",2500); };
+  r.append(a,b); m.append(r);
+}
 async function pvEml({to,subject,text,html,files}){ // MIME-bericht dat Outlook opent als nieuwe, nog te verzenden mail
   const b64u8=u8=>{ let s=""; for(let i=0;i<u8.length;i+=0x8000) s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000)); return btoa(s).replace(/.{76}/g,"$&\r\n"); };
   const b64s=str=>b64u8(new TextEncoder().encode(str));
@@ -1485,7 +1502,10 @@ for(const [id,welke] of [["#pv-xlsx",["xlsx"]],["#pv-pdf",["pdf"]]]) $(id).oncli
 };
 $("#pv-mail").onclick=async()=>{
   const p=pvRead(); pvStore(); const m=$("#pv-msg"); const bad=pvCheck(p); if(bad){ m.className="msg err"; m.textContent=bad[0]; if(bad[1]) $(bad[1]).focus(); return; }
-  const z=PVD.zones.find(x=>x.naam===p.zone)||{}; const me=pvMelder(); const V=p.voertuigen.filter(v=>v.plaat).slice().sort((a,b)=>(a.uur||'').localeCompare(b.uur||''));
+  const z=PVD.zones.find(x=>x.naam===p.zone)||{}; const me=pvMelder();
+  const to=(p.pmail||[z.mail,z.mail2].filter(Boolean).join(",")).split(/[;,\s]+/).filter(Boolean).join(",");
+  const gekopieerd=pvGsm()?pvKopieer(to):Promise.resolve(false);
+  const V=p.voertuigen.filter(v=>v.plaat).slice().sort((a,b)=>(a.uur||'').localeCompare(b.uur||''));
   const werf=[p.straat,p.gemeente].filter(Boolean).join(" ");
   const body=`Beste,
 
@@ -1505,14 +1525,11 @@ Cordialement,
 
 ${me.naam}
 BESIX Connect${me.tel?"\nM: "+me.tel:""}${me.mail?"\nE: "+me.mail:""}`;
-  const to=(p.pmail||[z.mail,z.mail2].filter(Boolean).join(",")).split(/[;,\s]+/).filter(Boolean).join(",");
   let files; try{ m.className="msg"; m.textContent="Bezig…"; files=await pvBestanden(p,["pdf","xlsx"]); }catch(e){ m.className="msg err"; m.textContent="Bijlagen maken lukte niet: "+(e.message||e); return; }
   m.textContent="";
   // gsm: deelmenu met de Excel als bijlage + tekst; het politieadres staat op het klembord om bij "Aan" te plakken
   if(pvKanDelen(files)){
-    try{ navigator.clipboard && navigator.clipboard.writeText(to).catch(()=>{}); }catch(e){}
-    try{ await navigator.share({files, title:pvOnderwerp(p), text:body});
-      m.className="msg ok"; m.textContent=`Kies Mail. Plak bij "Aan" het adres van de politie (staat op je klembord): ${to}`; return; }
+    try{ await navigator.share({files, title:pvOnderwerp(p), text:body}); pvAdresMsg(m,to,await gekopieerd); return; }
     catch(e){ if(e&&e.name==="AbortError") return; } // lukt delen niet: verder zoals op de computer
   }
   // computer: kant-en-klare Outlook-mail (.eml) met adres, onderwerp, tekst en de PDF + Excel in bijlage
